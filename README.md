@@ -1,5 +1,4 @@
-# AI-adaptive-math-learning-platform
-AI-powered adaptive learning platform for blind and deaf students, delivering personalized Pythagorean Theorem education through Machine Learning, Generative AI, and accessibility-focused technologies.
+
 # AI Adaptive Learning System for Blind and Deaf Students
 
 ## Overview
@@ -100,6 +99,3 @@ The project promotes inclusive education by making mathematics accessible to bli
 * Multilingual learning modules.
 * Advanced AI tutoring capabilities.
 
-## Team Vision
-
-**Making Mathematics Accessible, Personalized, and Inclusive for Every Student.**
