@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SimplexMath — Choose Your Path</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+.container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 5rem 2rem 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+h1 {
+  font-size: clamp(2rem, 4.5vw, 3.2rem);
+  margin-bottom: 0.5rem;
+}
+.subtitle {
+  color: var(--muted-text);
+  font-size: 1.05rem;
+  margin-bottom: 2rem;
+}
+
+/* CHOICE CARDS */
+.choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
+.choice-card {
+  padding: 2.5rem 2rem;
+  border-radius: 24px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.choice-card.blind-card {
+  border: 1px solid rgba(0, 240, 255, 0.1);
+  background: linear-gradient(180deg, rgba(0, 240, 255, 0.05), transparent);
+}
+.choice-card.deaf-card {
+  border: 1px solid rgba(168, 85, 247, 0.1);
+  background: linear-gradient(180deg, rgba(168, 85, 247, 0.05), transparent);
+}
+
+.choice-card:hover {
+  transform: translateY(-6px) scale(1.01);
+}
+
+.choice-card.blind-card:hover {
+  border-color: rgba(0, 240, 255, 0.4);
+  box-shadow: 0 15px 40px rgba(0, 240, 255, 0.12);
+}
+.choice-card.deaf-card:hover {
+  border-color: rgba(168, 85, 247, 0.4);
+  box-shadow: 0 15px 40px rgba(168, 85, 247, 0.12);
+}
+
+.choice-card.selected.blind-card {
+  border-color: var(--blind);
+  box-shadow: 0 0 0 2px var(--blind), 0 15px 40px rgba(0, 240, 255, 0.2);
+  transform: translateY(-3px);
+}
+.choice-card.selected.deaf-card {
+  border-color: var(--deaf);
+  box-shadow: 0 0 0 2px var(--deaf), 0 15px 40px rgba(168, 85, 247, 0.2);
+  transform: translateY(-3px);
+}
+
+.choice-emoji {
+  font-size: 2.8rem;
+  display: block;
+  margin-bottom: 1rem;
+  filter: drop-shadow(0 0 15px rgba(255,255,255,0.15));
+}
+
+.choice-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+
+.card-desc {
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* Feature tags */
+.feature-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.8rem;
+}
+.feature-tag {
+  font-size: 0.7rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 100px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--muted-text);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.blind-card .feature-tag {
+  background: rgba(0, 240, 255, 0.08);
+  color: var(--blind);
+  border-color: rgba(0, 240, 255, 0.15);
+}
+.deaf-card .feature-tag {
+  background: rgba(168, 85, 247, 0.08);
+  color: var(--deaf);
+  border-color: rgba(168, 85, 247, 0.15);
+}
+
+.proceed-btn {
+  padding: 1rem 3.5rem;
+  font-size: 1.1rem;
+  opacity: 0.3;
+  pointer-events: none;
+  transition: all 0.4s;
+  box-shadow: none;
+}
+.proceed-btn.ready {
+  opacity: 1;
+  pointer-events: all;
+  box-shadow: 0 10px 40px rgba(255,255,255,0.1);
+}
+
+.hint-text {
+  color: var(--muted-text);
+  font-size: 0.85rem;
+  margin-top: 0.8rem;
+}
+
+@media (max-width: 640px) {
+  .choices { grid-template-columns: 1fr; gap: 1rem; }
+  .choice-card { padding: 2rem 1.5rem; }
+}
+
+/* Profile dropdown */
+.profile-wrap { position: relative; }
+.profile-btn { display: flex; align-items: center; gap: 0.6rem; padding: 0.4rem 0.8rem 0.4rem 0.4rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 100px; cursor: pointer; transition: all 0.2s; color: #fff; font-family: 'Inter', sans-serif; font-size: 0.88rem; font-weight: 500; }
+.profile-btn:hover { background: rgba(255,255,255,0.09); }
+.profile-avatar { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, var(--blind), var(--deaf)); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; color: #000; flex-shrink: 0; overflow: hidden; }
+.profile-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.profile-chevron { font-size: 0.65rem; color: #64748b; transition: transform 0.2s; }
+.profile-wrap.open .profile-chevron { transform: rotate(180deg); }
+.profile-dropdown { display: none; position: absolute; top: calc(100% + 10px); right: 0; width: 240px; background: #0f0f14; border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); overflow: hidden; z-index: 200; }
+.profile-wrap.open .profile-dropdown { display: block; }
+.profile-info { padding: 1.1rem 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; gap: 0.8rem; }
+.profile-info-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--blind), var(--deaf)); display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; color: #000; flex-shrink: 0; overflow: hidden; }
+.profile-info-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.profile-info-text { min-width: 0; }
+.profile-info-name { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 0.92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.profile-info-email { font-size: 0.75rem; color: #475569; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dropdown-menu { padding: 0.5rem; }
+.dropdown-item { display: flex; align-items: center; gap: 0.7rem; padding: 0.65rem 0.8rem; border-radius: 10px; font-size: 0.88rem; color: #94a3b8; cursor: pointer; transition: all 0.15s; text-decoration: none; border: none; background: none; width: 100%; text-align: left; font-family: 'Inter', sans-serif; }
+.dropdown-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+.dropdown-item.danger:hover { background: rgba(239,68,68,0.08); color: #f87171; }
+.dropdown-icon { font-size: 1rem; width: 20px; text-align: center; }
+.dropdown-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 0.4rem 0.5rem; }
+</style>
+</head>
+<body>
+
+<div class="orb orb-cyan"></div>
+<div class="orb orb-purple"></div>
+
+<nav>
+  <a href="index.html" class="nav-logo">SimplexMath</a>
+  <a href="Learn.html" class="btn btn-outline" style="padding: 0.5rem 1.2rem; font-size: 0.9rem;">← Back to Lesson</a>
+  <div class="profile-wrap" id="profileWrap">
+    <button class="profile-btn" onclick="toggleProfile()">
+      <div class="profile-avatar" id="navAvatar">?</div>
+      <span id="userName"></span>
+      <span class="profile-chevron">▼</span>
+    </button>
+    <div class="profile-dropdown">
+      <div class="profile-info">
+        <div class="profile-info-avatar" id="dropAvatar">?</div>
+        <div class="profile-info-text">
+          <div class="profile-info-name" id="dropName">—</div>
+          <div class="profile-info-email" id="dropEmail">—</div>
+        </div>
+      </div>
+      <div class="dropdown-menu">
+        <a href="profile.html" class="dropdown-item"><span class="dropdown-icon">👤</span> My Profile</a>
+        <a href="profile.html" class="dropdown-item"><span class="dropdown-icon">📊</span> My Progress</a>
+        <div class="dropdown-divider"></div>
+        <button class="dropdown-item danger" onclick="handleLogout()"><span class="dropdown-icon">🚪</span> Logout</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="layout-wrapper">
+  <div class="container">
+    <h1 class="animate-fade-up">Choose Your <span class="text-gradient">Pathway</span></h1>
+    <p class="subtitle animate-fade-up delay-100">Select a specialized learning mode to continue.</p>
+
+    <div class="choices animate-fade-up delay-200">
+      <!-- BLIND -->
+      <div class="glass-card choice-card blind-card" onclick="select('blind')" id="blind-card">
+        <span class="choice-emoji">👁️</span>
+        <div class="choice-title text-cyan">Blind Mode</div>
+        <p class="card-desc">Navigate and learn effortlessly through voice-enabled interaction with intelligent audio guidance and real-time support.</p>
+        <div class="feature-tags">
+          <span class="feature-tag">Voice Control</span>
+          <span class="feature-tag">Audio Assistance</span>
+          <span class="feature-tag">Speech Recognition</span>
+        </div>
+      </div>
+
+      <!-- DEAF -->
+      <div class="glass-card choice-card deaf-card" onclick="select('deaf')" id="deaf-card">
+        <span class="choice-emoji">🎧</span>
+        <div class="choice-title text-purple">Deaf Mode</div>
+        <p class="card-desc">Learn effectively through clear visuals, engaging animations, and structured visual guidance.</p>
+        <div class="feature-tags">
+          <span class="feature-tag">Visual Diagrams</span>
+          <span class="feature-tag">Animations</span>
+          <span class="feature-tag">Guided Feedback</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="animate-fade-up delay-300">
+      <a href="#" class="btn btn-primary proceed-btn" id="proceed-btn">
+        Start Diagnostic Quiz
+      </a>
+      <p class="hint-text" id="hint-text">Select a mode above to unlock the quiz</p>
+    </div>
+  </div>
+</div>
+
+<script>
+let selected = null;
+function select(type) {
+  selected = type;
+  document.getElementById('blind-card').classList.remove('selected');
+  document.getElementById('deaf-card').classList.remove('selected');
+  document.getElementById(type+'-card').classList.add('selected');
+  
+  const btn = document.getElementById('proceed-btn');
+  btn.classList.add('ready');
+  
+  if(type === 'blind') {
+    btn.href = 'Quiz blind.html';
+    btn.style.background = 'linear-gradient(135deg, var(--blind), #0ea5e9)';
+    btn.style.boxShadow = '0 0 30px rgba(0, 240, 255, 0.4)';
+    document.getElementById('hint-text').innerHTML = 'Selected: <span class="text-cyan">Blind Mode</span>';
+  } else {
+    btn.href = 'Quiz deaf.html';
+    btn.style.background = 'linear-gradient(135deg, var(--deaf), #8b5cf6)';
+    btn.style.boxShadow = '0 0 30px rgba(168, 85, 247, 0.4)';
+    document.getElementById('hint-text').innerHTML = 'Selected: <span class="text-purple">Deaf Mode</span>';
+  }
+  localStorage.setItem('disability', type);
+}
+</script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  const firebaseConfig = { apiKey:"AIzaSyDS8hshom-srb-96anMSjr2wpq2_1A9Nk0", authDomain:"simplemath-20773.firebaseapp.com", projectId:"simplemath-20773", storageBucket:"simplemath-20773.firebasestorage.app", messagingSenderId:"798012087027", appId:"1:798012087027:web:8db7ea6b21cea5fdacb586" };
+  const auth = getAuth(initializeApp(firebaseConfig));
+  onAuthStateChanged(auth, (user) => {
+    if (!user) { window.location.href = 'login.html'; return; }
+    const name = user.displayName || 'User';
+    const initials = name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+    document.getElementById('userName').textContent = name.split(' ')[0];
+    document.getElementById('dropName').textContent = name;
+    document.getElementById('dropEmail').textContent = user.email || '';
+    if (user.photoURL) {
+      document.getElementById('navAvatar').innerHTML = `<img src="${user.photoURL}"/>`;
+      document.getElementById('dropAvatar').innerHTML = `<img src="${user.photoURL}"/>`;
+    } else {
+      document.getElementById('navAvatar').textContent = initials;
+      document.getElementById('dropAvatar').textContent = initials;
+    }
+  });
+  window.toggleProfile = () => document.getElementById('profileWrap').classList.toggle('open');
+  window.handleLogout = async () => { await signOut(auth); window.location.href = 'login.html'; };
+  document.addEventListener('click', (e) => { const w = document.getElementById('profileWrap'); if(w && !w.contains(e.target)) w.classList.remove('open'); });
+</script>
+</body>
+</html>

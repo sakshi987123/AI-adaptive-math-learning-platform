@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Evaluation Quiz — Blind Advanced Learner</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    html, body { height: 100vh; overflow: hidden; background: #020c1b; color: #f8fafc; font-family: 'Inter', sans-serif; }
+
+    .quiz-nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 1rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(2,12,27,0.85); backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .quiz-nav a { color: #22d3ee; text-decoration: none; font-weight: 600; font-size: 0.9rem; }
+    .quiz-nav .badge {
+      padding: 0.3rem 0.9rem; border-radius: 100px;
+      background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3);
+      color: #34d399; font-size: 0.8rem; font-weight: 600;
+    }
+
+    .quiz-page {
+      position: fixed; inset: 0; padding-top: 64px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding-left: 1.5rem; padding-right: 1.5rem;
+    }
+    body.results-mode { overflow-y: auto; height: auto; }
+    body.results-mode .quiz-page {
+      position: relative; inset: auto; overflow-y: visible;
+      height: auto; min-height: 100vh; justify-content: flex-start;
+      padding-top: 80px; padding-bottom: 3rem;
+    }
+
+    .progress-wrap {
+      width: 100%; max-width: 780px;
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 0.6rem;
+    }
+    .progress-label { font-size: 0.82rem; color: #64748b; }
+    .q-counter { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 0.9rem; color: #22d3ee; }
+    .progress-bar { width: 100%; max-width: 780px; height: 5px; background: rgba(255,255,255,0.06); border-radius: 100px; overflow: hidden; margin-bottom: 1rem; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, #10b981, #22d3ee); border-radius: 100px; transition: width 0.5s ease; }
+
+    .quiz-card {
+      width: 100%; max-width: 780px;
+      background: rgba(5,15,40,0.97);
+      border: 1px solid rgba(16,185,129,0.15);
+      border-radius: 24px;
+      padding: 1.8rem 2rem;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+
+    .audio-bar {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.5rem 1rem; border-radius: 100px;
+      background: rgba(16,185,129,0.07); border: 1px solid rgba(16,185,129,0.15);
+      font-size: 0.8rem; color: #34d399; margin-bottom: 1rem;
+    }
+    .audio-dot {
+      width: 8px; height: 8px; border-radius: 50%; background: #34d399; flex-shrink: 0;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:0.4;} 50%{opacity:1;} }
+
+    .question-text {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(1.2rem, 2.2vw, 1.6rem);
+      font-weight: 800; line-height: 1.3; margin-bottom: 0.3rem;
+    }
+    .question-sub { color: #64748b; font-size: 0.88rem; margin-bottom: 1rem; }
+
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; margin-bottom: 0.9rem; }
+    .option-btn {
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px; padding: 0.9rem 1.1rem;
+      text-align: left; cursor: pointer; color: #fff;
+      font-family: 'Inter', sans-serif; font-size: 0.95rem;
+      transition: all 0.2s; display: flex; align-items: center; gap: 0.75rem;
+    }
+    .option-btn:hover:not(:disabled) { background: rgba(16,185,129,0.08); border-color: rgba(16,185,129,0.35); transform: translateY(-1px); }
+    .option-btn.selected { background: rgba(16,185,129,0.12); border-color: #10b981; }
+    .option-btn.correct  { background: rgba(16,185,129,0.12); border-color: #10b981; }
+    .option-btn.wrong    { background: rgba(239,68,68,0.12);  border-color: #ef4444; }
+    .opt-key {
+      width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+      background: rgba(255,255,255,0.06);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 0.88rem;
+    }
+    .option-btn.selected .opt-key { background: #10b981; color: #000; }
+    .option-btn.correct  .opt-key { background: #10b981; color: #000; }
+    .option-btn.wrong    .opt-key { background: #ef4444; color: #fff; }
+
+    .hint-box {
+      display: none; padding: 0.8rem 1rem; border-radius: 12px; margin-bottom: 0.8rem;
+      background: rgba(34,211,238,0.07); border: 1px solid rgba(34,211,238,0.2);
+      font-size: 0.85rem; color: #67e8f9;
+    }
+
+    .feedback-box {
+      display: none; padding: 0.8rem 1rem; border-radius: 12px; margin-bottom: 0.8rem;
+      font-size: 0.88rem;
+    }
+    .feedback-box.correct { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); }
+    .feedback-box.wrong   { background: rgba(239,68,68,0.1);  border: 1px solid rgba(239,68,68,0.3); }
+    .feedback-title { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1rem; margin-bottom: 0.2rem; }
+    .feedback-box.correct .feedback-title { color: #10b981; }
+    .feedback-box.wrong   .feedback-title { color: #ef4444; }
+    .feedback-desc { color: #94a3b8; }
+
+    .btn-row { display: flex; gap: 0.7rem; flex-wrap: wrap; }
+    .btn {
+      padding: 0.7rem 1.3rem; border-radius: 100px; border: none; cursor: pointer;
+      font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 0.88rem;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: #10b981; color: #000; }
+    .btn-primary:hover { background: #34d399; transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    .btn-secondary { background: rgba(255,255,255,0.07); color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); }
+    .btn-secondary:hover { background: rgba(255,255,255,0.12); color: #fff; }
+
+    /* ── UNIFIED RESULTS LAYOUT ── */
+    .results-wrapper { width: 100%; max-width: 1100px; }
+    .results-grid {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 1.2rem;
+      align-items: start;
+      width: 100%;
+    }
+    .col-left, .col-right { display: flex; flex-direction: column; gap: 1.2rem; }
+
+    .score-card, .topic-card, .review-card, .ai-card {
+      background: rgba(5,15,40,0.97); border-radius: 22px; padding: 1.5rem;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+    }
+    .score-card { border: 1px solid rgba(16,185,129,0.15); text-align: center; }
+    .topic-card, .ai-card { border: 1px solid rgba(168,85,247,0.2); }
+    .review-card { border: 1px solid rgba(16,185,129,0.15); }
+
+    .result-title-text { font-family:'Outfit',sans-serif; font-size:1.4rem; font-weight:800; margin-bottom:0.3rem; }
+    .result-score { font-family:'Outfit',sans-serif; font-size:4rem; font-weight:800; color:#22d3ee; line-height:1; }
+    .result-label { color:#64748b; font-size:0.82rem; margin:0.4rem 0 1rem; }
+    .stats-row { display:grid; grid-template-columns:1fr; gap:0.6rem; margin-bottom:1rem; }
+    .stat-box { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:0.75rem 1rem; display:flex; align-items:center; justify-content:space-between; }
+    .stat-box .val { font-family:'Outfit',sans-serif; font-size:1.8rem; font-weight:800; }
+    .stat-box .lbl { font-size:0.82rem; color:#64748b; }
+    .result-actions { display:flex; gap:0.7rem; justify-content:center; flex-wrap:wrap; }
+
+    .imp-header { display:flex; align-items:center; gap:0.7rem; margin-bottom:0.9rem; }
+    .imp-header h3 { font-family:'Outfit',sans-serif; font-size:0.95rem; font-weight:800; color:#c084fc; margin:0; }
+    .badge-ai { padding:0.2rem 0.6rem; border-radius:100px; font-size:0.68rem; font-weight:600; background:rgba(168,85,247,0.15); border:1px solid rgba(168,85,247,0.3); color:#c084fc; white-space:nowrap; }
+
+    .topic-row { margin-bottom:0.65rem; }
+    .topic-label { display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:0.2rem; }
+    .topic-name { color:#e2e8f0; } .topic-pct { font-weight:700; }
+    .topic-bar-bg { height:7px; background:rgba(255,255,255,0.06); border-radius:100px; overflow:hidden; }
+    .topic-bar-fill { height:100%; border-radius:100px; transition:width 0.8s ease; }
+
+    .review-heading { font-family:'Outfit',sans-serif; font-weight:700; font-size:0.9rem; color:#94a3b8; margin-bottom:0.75rem; }
+    .review-scroll { max-height:240px; overflow-y:auto; scrollbar-width:thin; scrollbar-color:rgba(16,185,129,0.3) transparent; }
+    .review-item { padding:0.7rem 0.85rem; border-radius:11px; margin-bottom:0.5rem; font-size:0.82rem; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.2); color:#fca5a5; }
+    .review-item strong { display:block; margin-bottom:0.2rem; color:#f87171; font-size:0.84rem; }
+    .review-none { color:#10b981; text-align:center; padding:1.5rem; font-size:0.88rem; }
+
+    .ai-plan-text { background:rgba(168,85,247,0.06); border:1px solid rgba(168,85,247,0.15); border-radius:12px; padding:0.85rem 1rem; font-size:0.85rem; line-height:1.7; color:#e2e8f0; }
+    .ai-plan-loading { color:#64748b; font-size:0.82rem; font-style:italic; }
+    .next-step-item { display:flex; align-items:flex-start; gap:0.6rem; padding:0.45rem 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.81rem; color:#cbd5e1; }
+    .next-step-item:last-child { border-bottom:none; }
+    .step-icon { font-size:0.9rem; flex-shrink:0; margin-top:0.1rem; }
+
+    @media(max-width:800px) { .results-grid { grid-template-columns:1fr; } }
+    @media(max-width:600px) { .options-grid { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+<div class="orb orb-cyan" style="opacity:0.15;"></div>
+<div class="orb orb-purple" style="opacity:0.15;"></div>
+
+<nav class="quiz-nav">
+  <a href="blind_advanced.html">← Back to Lesson</a>
+  <span class="badge">🎧 Advanced Learner Evaluation</span>
+</nav>
+
+<div class="quiz-page">
+
+  <div class="progress-wrap">
+    <span class="progress-label">Evaluation Quiz</span>
+    <span class="q-counter" id="q-counter">Question 1 of 5</span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+
+  <div class="quiz-card" id="quiz-card">
+    <div class="audio-bar">
+      <div class="audio-dot"></div>
+      <span id="audio-status">🔊 Reading question aloud...</span>
+    </div>
+
+    <div class="question-text" id="question-text">Loading...</div>
+    <div class="question-sub" id="question-sub"></div>
+
+    <div class="options-grid" id="options-grid"></div>
+
+    <div class="hint-box" id="hint-box"></div>
+    <div class="feedback-box" id="feedback-box">
+      <div class="feedback-title" id="feedback-title"></div>
+      <div class="feedback-desc" id="feedback-desc"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="submit-btn" disabled onclick="submitAnswer()">Submit Answer</button>
+      <button class="btn btn-secondary" onclick="replayQuestion()">🔁 Repeat</button>
+      <button class="btn btn-secondary" onclick="showHint()">💡 Hint</button>
+    </div>
+  </div>
+
+  <!-- RESULT + IMPROVEMENTS: unified side-by-side layout -->
+  <div class="results-wrapper" id="results-wrapper" style="display:none;">
+    <div class="results-grid">
+
+      <!-- LEFT COLUMN: Score + Stats + Topic Analysis -->
+      <div class="col-left">
+        <div class="score-card">
+          <div class="result-title-text" id="result-title"></div>
+          <div class="result-score" id="result-score">0/5</div>
+          <div class="result-label" id="result-label"></div>
+          <div class="stats-row">
+            <div class="stat-box"><div class="lbl">Correct</div><div class="val" id="stat-correct" style="color:#10b981;">0</div></div>
+            <div class="stat-box"><div class="lbl">Wrong</div><div class="val" id="stat-wrong" style="color:#ef4444;">0</div></div>
+            <div class="stat-box"><div class="lbl">Accuracy</div><div class="val" id="stat-pct" style="color:#22d3ee;">0%</div></div>
+          </div>
+          <div class="result-actions">
+            <button class="btn btn-primary" onclick="restartQuiz()">↺ Try Again</button>
+            <button class="btn btn-secondary" onclick="location.href='blind_advanced.html'">← Lesson</button>
+          </div>
+        </div>
+
+        <div class="topic-card" id="topic-card">
+          <div class="imp-header">
+            <h3>📊 Topic Analysis</h3>
+            <span class="badge-ai">XAI + Rules</span>
+          </div>
+          <div id="topic-bars-content"><div class="ai-plan-loading">Analyzing...</div></div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: Review + AI Plan -->
+      <div class="col-right">
+        <div class="review-card">
+          <div class="review-heading">📋 Questions to Review</div>
+          <div class="review-scroll" id="review-list"></div>
+        </div>
+
+        <div class="ai-card" id="ai-card">
+          <div class="imp-header">
+            <h3>🤖 AI Recommendations</h3>
+            <span class="badge-ai">GenAI</span>
+          </div>
+          <div class="ai-plan-text" id="ai-plan-text">
+            <span class="ai-plan-loading">Generating your personalized plan...</span>
+          </div>
+          <div class="next-steps" id="next-steps"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- end quiz-page -->
+
+<script>
+  const questions = [
+    {
+      text: "If a equals 6 and b equals 8, what is the length of the hypotenuse c?",
+      sub: "Apply the Pythagoras theorem: c squared equals a squared plus b squared.",
+      options: { A:"10", B:"12", C:"14", D:"48" },
+      correct: "A",
+      hint: "6 squared is 36. 8 squared is 64. 36 plus 64 equals 100. What is the square root of 100?",
+      explanation: "c squared equals 36 plus 64 equals 100. The square root of 100 is 10. So c equals 10."
+    },
+    {
+      text: "If the hypotenuse c equals 13 and one leg a equals 5, what is the length of leg b?",
+      sub: "Rearrange the formula: b squared equals c squared minus a squared.",
+      options: { A:"8", B:"10", C:"12", D:"144" },
+      correct: "C",
+      hint: "13 squared is 169. 5 squared is 25. Subtract: 169 minus 25 equals 144. What is the square root of 144?",
+      explanation: "b squared equals 169 minus 25 equals 144. The square root of 144 is 12. So b equals 12."
+    },
+    {
+      text: "Which set of three numbers forms a valid Pythagorean triple?",
+      sub: "A Pythagorean triple satisfies a squared plus b squared equals c squared.",
+      options: { A:"2, 3, 4", B:"5, 12, 13", C:"6, 7, 8", D:"4, 5, 7" },
+      correct: "B",
+      hint: "Check: 5 squared plus 12 squared. That is 25 plus 144 equals 169. Is 169 a perfect square?",
+      explanation: "5 squared plus 12 squared equals 25 plus 144 equals 169, which equals 13 squared. So 5, 12, 13 is a valid Pythagorean triple."
+    },
+    {
+      text: "A ladder 10 metres long leans against a wall. The base is 6 metres from the wall. How high up the wall does the ladder reach?",
+      sub: "The ladder, wall, and ground form a right triangle.",
+      options: { A:"6 metres", B:"7 metres", C:"8 metres", D:"9 metres" },
+      correct: "C",
+      hint: "The ladder is the hypotenuse: 10 squared equals 100. The base is 6: 6 squared equals 36. Height squared equals 100 minus 36.",
+      explanation: "Height squared equals 100 minus 36 equals 64. The square root of 64 is 8. The ladder reaches 8 metres up the wall."
+    },
+    {
+      text: "If a squared plus b squared equals c squared and a equals b, which expression gives c in terms of a?",
+      sub: "Substitute a equals b into the formula and simplify.",
+      options: { A:"c equals 2a", B:"c equals a times the square root of 2", C:"c equals a squared", D:"c equals a plus 1" },
+      correct: "B",
+      hint: "If a equals b, then c squared equals a squared plus a squared equals 2 times a squared. So c equals the square root of 2 times a squared.",
+      explanation: "c squared equals 2 times a squared. Taking the square root gives c equals a times the square root of 2."
+    }
+  ];
+
+  let currentIndex = 0;
+  let selected = null;
+  let answered = false;
+  let score = 0;
+  const answers = [];
+
+  function setAudioStatus(msg) {
+    document.getElementById('audio-status').textContent = msg;
+  }
+
+  function getVoice() {
+    const voices = window.speechSynthesis.getVoices();
+    return voices.find(v => /en/i.test(v.lang) && /(female|zira|samantha|google)/i.test(v.name))
+      || voices.find(v => /en/i.test(v.lang)) || voices[0];
+  }
+
+  function speak(text, onEnd) {
+    window.speechSynthesis.cancel();
+    const utt = new SpeechSynthesisUtterance(text);
+    const v = getVoice(); if (v) utt.voice = v;
+    utt.rate = 0.9; utt.pitch = 1; utt.volume = 1;
+    const ms = Math.max((text.length/5/150)*60000+1000, 2000);
+    let done = false;
+    const t = setTimeout(() => { if(!done){done=true; if(onEnd) onEnd();} }, ms);
+    utt.onend = () => { if(!done){done=true; clearTimeout(t); if(onEnd) onEnd();} };
+    utt.onerror = () => { if(!done){done=true; clearTimeout(t); if(onEnd) onEnd();} };
+    window.speechSynthesis.speak(utt);
+  }
+
+  function loadQuestion(idx) {
+    const q = questions[idx];
+    selected = null;
+    answered = false;
+    document.getElementById('q-counter').textContent = `Question ${idx+1} of ${questions.length}`;
+    document.getElementById('progress-fill').style.width = `${(idx / questions.length) * 100}%`;
+    document.getElementById('question-text').textContent = q.text;
+    document.getElementById('question-sub').textContent = q.sub;
+    document.getElementById('hint-box').style.display = 'none';
+    document.getElementById('feedback-box').style.display = 'none';
+    document.getElementById('submit-btn').disabled = true;
+    document.getElementById('submit-btn').textContent = 'Submit Answer';
+    document.getElementById('submit-btn').onclick = submitAnswer;
+
+    const grid = document.getElementById('options-grid');
+    grid.innerHTML = Object.entries(q.options).map(([key, val]) =>
+      `<button class="option-btn" data-key="${key}" onclick="selectOption(this,'${key}')">
+        <span class="opt-key">${key}</span><span>${val}</span>
+      </button>`
+    ).join('');
+
+    setAudioStatus('🔊 Reading question aloud...');
+    const text = `Question ${idx+1}. ${q.text}. ${q.sub}. Options: A: ${q.options.A}. B: ${q.options.B}. C: ${q.options.C}. D: ${q.options.D}. Say A, B, C, or D. Or say hint for a clue.`;
+    speak(text, () => { setAudioStatus('⏳ Get ready to speak...'); setTimeout(() => startListening(), 1200); });
+  }
+
+  // ── VOICE RECOGNITION ──
+  let retryCount = 0;
+  let recognition = null;
+
+  function startListening() {
+    if (answered) return;
+    if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+      setAudioStatus('⚠️ Voice not supported — use buttons below'); return;
+    }
+    window.speechSynthesis.cancel();
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SR();
+    recognition.lang = 'en-US'; recognition.interimResults = false; recognition.maxAlternatives = 3;
+    setAudioStatus('🎙️ Listening... say A, B, C, D, or "hint"');
+    let final = '';
+    recognition.onresult = (e) => {
+      for (let i = e.resultIndex; i < e.results.length; i++)
+        if (e.results[i].isFinal) final += e.results[i][0].transcript;
+      setAudioStatus(`Heard: "${final}"`);
+    };
+    recognition.onerror = () => handleNoAnswer();
+    recognition.onend = () => {
+      if (answered) return;
+      const t = final.trim().toLowerCase();
+      if (!t) { handleNoAnswer(); return; }
+      if (t.includes('hint')) { triggerHintByVoice(); return; }
+      const matched = resolveAnswer(t);
+      if (matched) {
+        const btn = document.querySelector(`[data-key="${matched}"]`);
+        if (btn) selectOption(btn, matched);
+        setTimeout(() => submitAnswer(), 400);
+      } else { handleNoAnswer(); }
+    };
+    recognition.start();
+  }
+
+  function resolveAnswer(t) {
+    const q = questions[currentIndex];
+    if (/\ba\b/.test(t)) return 'A'; if (/\bb\b/.test(t)) return 'B';
+    if (/\bc\b/.test(t)) return 'C'; if (/\bd\b/.test(t)) return 'D';
+    for (const [k, v] of Object.entries(q.options)) if (t.includes(v.toLowerCase())) return k;
+    if (/^(ay|eh|aye)$/.test(t.trim())) return 'A'; if (/^(be|bee|bay)$/.test(t.trim())) return 'B';
+    if (/^(see|sea|si)$/.test(t.trim())) return 'C'; if (/^(dee|de|the)$/.test(t.trim())) return 'D';
+    return null;
+  }
+
+  function handleNoAnswer() {
+    if (answered) return;
+    retryCount++;
+    if (retryCount <= 2) {
+      setAudioStatus(`No answer heard. Repeating question (attempt ${retryCount} of 2)...`);
+      speak('I did not catch your answer. Let me repeat the question.', () => {
+        const q = questions[currentIndex];
+        speak(`${q.text}. Options: A: ${q.options.A}. B: ${q.options.B}. C: ${q.options.C}. D: ${q.options.D}. Say A, B, C, or D.`, () => {
+          setAudioStatus('⏳ Get ready...'); setTimeout(() => startListening(), 1200);
+        });
+      });
+    } else {
+      // Only push ONE entry when skipping after all retries
+      answered = true;
+      setAudioStatus('No answer after 3 tries. Moving to next question...');
+      answers.push({ text: questions[currentIndex].text, selected: 'No answer', correct: false, correctKey: questions[currentIndex].correct, correctVal: questions[currentIndex].options[questions[currentIndex].correct], explanation: questions[currentIndex].explanation });
+      speak('No answer detected after three attempts. Moving to the next question.', () => {
+        setTimeout(() => { currentIndex++; if (currentIndex < questions.length) loadQuestion(currentIndex); else showResults(); }, 500);
+      });
+    }
+  }
+
+  function triggerHintByVoice() {
+    const q = questions[currentIndex];
+    const hb = document.getElementById('hint-box');
+    hb.textContent = '💡 Hint: ' + q.hint; hb.style.display = 'block';
+    setAudioStatus('💡 Reading hint...');
+    speak('Hint: ' + q.hint, () => { setAudioStatus('⏳ Get ready to answer...'); setTimeout(() => startListening(), 1500); });
+  }
+
+  function selectOption(btn, key) {
+    if (answered) return;
+    document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selected = key;
+    document.getElementById('submit-btn').disabled = false;
+  }
+
+  function replayQuestion() {
+    if (recognition) { try { recognition.stop(); } catch(e){} }
+    retryCount = 0;
+    const q = questions[currentIndex];
+    setAudioStatus('🔊 Repeating question...');
+    speak(`${q.text}. ${q.sub}. Options: A: ${q.options.A}. B: ${q.options.B}. C: ${q.options.C}. D: ${q.options.D}. Say A, B, C, or D. Or say hint.`, () => {
+      setAudioStatus('⏳ Get ready...'); setTimeout(() => startListening(), 1200);
+    });
+  }
+
+  function showHint() { triggerHintByVoice(); }
+
+  function submitAnswer() {
+    if (!selected || answered) return;
+    answered = true;
+    if (recognition) { try { recognition.stop(); } catch(e){} }
+    const q = questions[currentIndex];
+    const correct = selected === q.correct;
+    answers.push({ text: q.text, selected, correct, correctKey: q.correct, correctVal: q.options[q.correct], explanation: q.explanation });
+    if (correct) score++;
+
+    document.querySelectorAll('.option-btn').forEach(btn => {
+      btn.disabled = true;
+      const k = btn.dataset.key;
+      if (k === q.correct) btn.classList.add('correct');
+      if (k === selected && !correct) btn.classList.add('wrong');
+    });
+
+    const fb = document.getElementById('feedback-box');
+    fb.className = correct ? 'feedback-box correct' : 'feedback-box wrong';
+    document.getElementById('feedback-title').textContent = correct ? '✅ Correct!' : '❌ Wrong Answer';
+    document.getElementById('feedback-desc').textContent = q.explanation;
+    fb.style.display = 'block';
+    setAudioStatus(correct ? '✅ Correct!' : '❌ Wrong Answer');
+
+    speak((correct ? 'Correct! ' : 'Wrong Answer. ') + q.explanation, () => {
+      setTimeout(() => { currentIndex++; if (currentIndex < questions.length) loadQuestion(currentIndex); else showResults(); }, 600);
+    });
+
+    const btn = document.getElementById('submit-btn');
+    btn.textContent = currentIndex < questions.length - 1 ? 'Next Question →' : 'See Results →';
+    btn.onclick = () => { window.speechSynthesis.cancel(); currentIndex++; if (currentIndex < questions.length) loadQuestion(currentIndex); else showResults(); };
+    btn.disabled = false;
+  }
+
+  function showResults() {
+    document.getElementById('quiz-card').style.display = 'none';
+    document.body.classList.add('results-mode');
+    document.getElementById('results-wrapper').style.display = 'block';
+    document.getElementById('progress-fill').style.width = '100%';
+    document.getElementById('q-counter').textContent = 'Complete!';
+
+    const pct = Math.round((score / questions.length) * 100);
+    const wrong = answers.filter(a => !a.correct);
+
+    document.getElementById('result-title').textContent = pct === 100 ? '🏆 Outstanding!' : pct >= 60 ? '✅ Well Done!' : '📚 Keep Practicing!';
+    document.getElementById('result-score').textContent = `${score}/${questions.length}`;
+    document.getElementById('result-label').textContent = pct === 100 ? 'Perfect score — you mastered the Pythagoras theorem!' : `You scored ${score} out of ${questions.length}.`;
+    document.getElementById('stat-correct').textContent = score;
+    document.getElementById('stat-wrong').textContent = wrong.length;
+    document.getElementById('stat-pct').textContent = pct + '%';
+
+    const rl = document.getElementById('review-list');
+    if (wrong.length === 0) {
+      rl.innerHTML = '<div class="review-none">No mistakes — outstanding performance!</div>';
+    } else {
+      rl.innerHTML = wrong.map(a => `<div class="review-item"><strong>${a.text}</strong>Your answer: ${a.selected} — Correct: ${a.correctKey} (${a.correctVal})<br><span style="color:#94a3b8;">${a.explanation}</span></div>`).join('');
+    }
+
+    speak(`Quiz complete. You scored ${score} out of ${questions.length}. ${pct === 100 ? 'Outstanding performance!' : `Review the ${wrong.length} incorrect question${wrong.length===1?'':'s'} to strengthen your understanding.`}`);
+    fetchAnalysis();
+  }
+
+  async function fetchAnalysis() {
+    try {
+      const res = await fetch('http://127.0.0.1:5000/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ answers, level: 'advanced' })
+      });
+      const data = await res.json();
+      renderTopicBars(data);
+      renderAIPlan(data);
+
+      // ── Save to learning history ──
+      const uid = localStorage.getItem('userUID');
+      if (uid) {
+        fetch('http://127.0.0.1:5000/user/save_result', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            uid,
+            quiz_type: 'evaluation',
+            disability: 'blind',
+            level: 'advanced',
+            accuracy: data.percentage || 0,
+            total_questions: data.total || 5,
+            correct: data.score || 0,
+            wrong: (data.total || 5) - (data.score || 0),
+            weak_topics: data.weak_topics || [],
+            strong_topics: data.strong_topics || [],
+            topic_impacts: data.topic_impacts || {},
+            improvement_text: data.improvement_text || '',
+            answers_detail: answers
+          })
+        }).catch(() => {});
+      }
+    } catch (err) {
+      document.getElementById('topic-bars-content').innerHTML = '<div class="ai-plan-loading">Could not load analysis. Make sure the backend is running.</div>';
+      document.getElementById('ai-plan-text').textContent = 'Could not connect to the AI. Please make sure the backend is running on port 5000.';
+    }
+  }
+
+  function renderTopicBars(data) {
+    const container = document.getElementById('topic-bars-content');
+    const impacts = data.topic_impacts;
+    const labels = data.topic_labels;
+    if (!impacts || Object.keys(impacts).length === 0) {
+      container.innerHTML = '<div class="ai-plan-loading">No topic data available.</div>'; return;
+    }
+    container.innerHTML = Object.entries(impacts).map(([topic, info]) => {
+      const label = labels[topic] || topic;
+      const pct = info.accuracy;
+      const color = pct >= 80 ? '#10b981' : pct >= 50 ? '#f59e0b' : '#ef4444';
+      const isWeak = data.weak_topics.includes(topic);
+      return `<div class="topic-row">
+        <div class="topic-label">
+          <span class="topic-name">${isWeak ? '⚠️ ' : '✅ '}${label}</span>
+          <span class="topic-pct" style="color:${color}">${pct}%</span>
+        </div>
+        <div class="topic-bar-bg">
+          <div class="topic-bar-fill" style="width:${pct}%; background:${color};"></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderAIPlan(data) {
+    document.getElementById('ai-plan-text').textContent = data.improvement_text;
+    const nextSteps = [];
+    if (data.weak_topics.includes('theorem'))    nextSteps.push({ icon: '📖', text: 'Review the formal proof and derivation of the Pythagoras theorem.' });
+    if (data.weak_topics.includes('hypotenuse')) nextSteps.push({ icon: '📐', text: 'Practice identifying all three sides in varied right triangle orientations.' });
+    if (data.weak_topics.includes('calculation')) nextSteps.push({ icon: '🧮', text: 'Work through multi-step calculations: square both legs, then add.' });
+    if (data.weak_topics.includes('square_root')) nextSteps.push({ icon: '√',  text: 'Memorise perfect squares up to 225 and their square roots.' });
+    if (data.weak_topics.includes('application')) nextSteps.push({ icon: '🏗️', text: 'Solve 3 real-world problems daily — ladders, distances, coordinates.' });
+    if (nextSteps.length === 0) nextSteps.push({ icon: '🚀', text: 'Excellent mastery! Explore extensions: 3D Pythagoras and distance formula.' });
+    const ns = document.getElementById('next-steps');
+    ns.innerHTML = '<div style="font-size:0.82rem;color:#94a3b8;margin:0.8rem 0 0.4rem;font-weight:600;">📌 Next Steps</div>' +
+      nextSteps.map(s => `<div class="next-step-item"><span class="step-icon">${s.icon}</span><span>${s.text}</span></div>`).join('');
+    setTimeout(() => speak('Here is your improvement plan. ' + data.improvement_text), 2000);
+  }
+
+  function restartQuiz() {
+    currentIndex = 0; score = 0; answers.length = 0; retryCount = 0; answered = false;
+    document.body.classList.remove('results-mode');
+    document.getElementById('results-wrapper').style.display = 'none';
+    document.getElementById('quiz-card').style.display = 'block';
+    loadQuestion(0);
+  }
+
+  window.onload = () => {
+    window.speechSynthesis.getVoices();
+    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+      window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    }
+    setTimeout(() => loadQuestion(0), 800);
+  };
+</script>
+</body>
+</html>

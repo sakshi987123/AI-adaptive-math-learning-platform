@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SimplexMath — Audio Quiz</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+/* ── LOCK TO VIEWPORT — NO SCROLL ── */
+html, body { height: 100vh; overflow: hidden; }
+
+.quiz-page {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  padding-top: 64px; /* nav height */
+}
+
+/* ── PROGRESS BAR (top strip) ── */
+.progress-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 2.5rem 0;
+  flex-shrink: 0;
+}
+.progress-label { font-size: 0.92rem; color: var(--muted-text); }
+.q-counter { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1rem; color: var(--blind); }
+.progress-bar {
+  height: 6px; background: rgba(255,255,255,0.05);
+  border-radius: 100px; overflow: hidden; margin: 0.5rem 2.5rem 0; flex-shrink: 0;
+}
+.progress-fill {
+  height: 100%; background: linear-gradient(90deg, var(--blind), #0ea5e9);
+  border-radius: 100px; transition: width 0.6s ease;
+}
+
+/* ── MAIN CONTENT AREA ── */
+.quiz-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 2rem;
+  overflow: hidden;
+}
+
+.quiz-card {
+  width: 100%;
+  max-width: 860px;
+  background: linear-gradient(180deg, rgba(5,24,46,0.97), rgba(6,38,72,0.95));
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 28px;
+  padding: 2rem 2.5rem;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+
+/* ── AUDIO STATUS ── */
+.audio-status-bar {
+  display: flex; align-items: center; gap: 0.7rem;
+  padding: 0.7rem 1.2rem;
+  background: rgba(0,240,255,0.06); border: 1px solid rgba(0,240,255,0.12);
+  border-radius: 100px; margin-bottom: 1.2rem;
+  font-size: 0.92rem; color: var(--blind);
+}
+.audio-pulse {
+  width: 10px; height: 10px; border-radius: 50%; background: var(--blind); flex-shrink: 0;
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+@keyframes pulse-glow {
+  0%,100% { opacity:0.4; box-shadow:0 0 4px rgba(0,240,255,0.2); }
+  50%      { opacity:1;   box-shadow:0 0 10px rgba(0,240,255,0.6); }
+}
+
+/* ── BADGE ── */
+.q-type-badge {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.4rem 1rem;
+  background: rgba(0,240,255,0.1); border: 1px solid rgba(0,240,255,0.2);
+  border-radius: 100px; font-size: 0.85rem; font-weight: 500; color: var(--blind);
+  margin-bottom: 1rem;
+}
+
+/* ── QUESTION ── */
+.question-text {
+  font-family: 'Outfit', sans-serif; font-size: clamp(1.4rem, 2.5vw, 2rem);
+  font-weight: 800; line-height: 1.3; margin-bottom: 0.4rem;
+}
+.question-sub { color: var(--muted-text); font-size: 0.95rem; margin-bottom: 1.1rem; }
+
+/* ── OPTIONS ── */
+.options-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 1rem;
+}
+.option-btn {
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px; padding: 1rem 1.2rem;
+  text-align: left; cursor: pointer; color: #fff;
+  font-family: 'Inter', sans-serif; font-size: 1.05rem;
+  transition: all 0.2s; display: flex; align-items: center; gap: 0.85rem;
+}
+.option-btn:hover  { background: rgba(0,240,255,0.06); border-color: rgba(0,240,255,0.3); transform: translateY(-2px); }
+.option-btn.selected { background: rgba(0,240,255,0.1); border-color: var(--blind); }
+.option-btn.correct  { background: rgba(16,185,129,0.12); border-color: var(--green); }
+.option-btn.wrong    { background: rgba(239,68,68,0.12);  border-color: var(--red); }
+
+.opt-key {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: rgba(255,255,255,0.06);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 700; flex-shrink: 0;
+}
+.option-btn.selected .opt-key { background: var(--blind); color: #000; }
+.option-btn.correct  .opt-key { background: var(--green); color: #000; }
+.option-btn.wrong    .opt-key { background: var(--red);   color: #fff; }
+
+/* ── FEEDBACK ── */
+.feedback-box {
+  border-radius: 14px; padding: 1rem 1.3rem;
+  display: none; animation: fadeUp 0.3s ease;
+}
+.feedback-box.correct { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); }
+.feedback-box.wrong   { background: rgba(239,68,68,0.1);  border: 1px solid rgba(239,68,68,0.3); }
+.feedback-title { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.1rem; margin-bottom: 0.3rem; }
+.feedback-box.correct .feedback-title { color: var(--green); }
+.feedback-box.wrong   .feedback-title { color: var(--red); }
+.feedback-text { font-size: 0.92rem; color: var(--muted-text); }
+
+/* ── SCORE PANEL ── */
+.score-panel { display: none; text-align: center; padding: 1.8rem 2.5rem; }
+.score-circle {
+  width: 170px; height: 170px; border-radius: 50%;
+  background: conic-gradient(var(--blind) 0%, var(--blind) calc(var(--score)*1%), rgba(255,255,255,0.05) calc(var(--score)*1%));
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 1.5rem; position: relative;
+}
+.score-circle::before { content:''; position:absolute; inset:12px; background:var(--bg-color); border-radius:50%; }
+.score-num { position:relative; z-index:1; font-family:'Outfit',sans-serif; font-size:2.8rem; font-weight:800; }
+.level-badge {
+  display: inline-block; padding: 0.55rem 2rem; border-radius: 100px;
+  font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.05rem; margin-bottom: 1.2rem;
+}
+.level-slow     { background:rgba(239,68,68,0.15);  color:var(--red);   border:1px solid rgba(239,68,68,0.4); }
+.level-advanced { background:rgba(16,185,129,0.15); color:var(--green); border:1px solid rgba(16,185,129,0.4); }
+.result-title { font-size: 2rem; margin-bottom: 0.7rem; }
+.result-desc  { color: var(--muted-text); font-size: 1rem; margin-bottom: 1.5rem; }
+
+/* ── PROFILE DROPDOWN ── */
+.profile-wrap { position: relative; }
+.profile-btn { display:flex; align-items:center; gap:0.6rem; padding:0.4rem 0.8rem 0.4rem 0.4rem; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:100px; cursor:pointer; color:#fff; font-family:'Inter',sans-serif; font-size:0.88rem; font-weight:500; transition:all 0.2s; }
+.profile-btn:hover { background:rgba(255,255,255,0.09); }
+.profile-avatar { width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg,var(--blind),var(--deaf)); display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:700; color:#000; flex-shrink:0; overflow:hidden; }
+.profile-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.profile-chevron { font-size:0.65rem; color:#64748b; transition:transform 0.2s; }
+.profile-wrap.open .profile-chevron { transform:rotate(180deg); }
+.profile-dropdown { display:none; position:absolute; top:calc(100% + 10px); right:0; width:240px; background:#0f0f14; border:1px solid rgba(255,255,255,0.08); border-radius:16px; box-shadow:0 20px 50px rgba(0,0,0,0.6); overflow:hidden; z-index:200; }
+.profile-wrap.open .profile-dropdown { display:block; }
+.profile-info { padding:1.1rem 1.2rem; border-bottom:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; gap:0.8rem; }
+.profile-info-avatar { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,var(--blind),var(--deaf)); display:flex; align-items:center; justify-content:center; font-size:1rem; font-weight:700; color:#000; flex-shrink:0; overflow:hidden; }
+.profile-info-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.profile-info-text { min-width:0; }
+.profile-info-name { font-family:'Outfit',sans-serif; font-weight:700; font-size:0.92rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.profile-info-email { font-size:0.75rem; color:#475569; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.dropdown-menu { padding:0.5rem; }
+.dropdown-item { display:flex; align-items:center; gap:0.7rem; padding:0.65rem 0.8rem; border-radius:10px; font-size:0.88rem; color:#94a3b8; cursor:pointer; transition:all 0.15s; text-decoration:none; border:none; background:none; width:100%; text-align:left; font-family:'Inter',sans-serif; }
+.dropdown-item:hover { background:rgba(255,255,255,0.05); color:#fff; }
+.dropdown-item.danger:hover { background:rgba(239,68,68,0.08); color:#f87171; }
+.dropdown-icon { font-size:1rem; width:20px; text-align:center; }
+.dropdown-divider { height:1px; background:rgba(255,255,255,0.06); margin:0.4rem 0.5rem; }
+
+@media(max-width:640px) { .options-grid { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="orb orb-cyan"></div>
+<div class="orb orb-purple"></div>
+
+<nav>
+  <a href="index.html" class="nav-logo">SimplexMath</a>
+  <div class="nav-badge text-cyan border-cyan">🎧 Audio Mode</div>
+  <div class="profile-wrap" id="profileWrap">
+    <button class="profile-btn" onclick="toggleProfile()">
+      <div class="profile-avatar" id="navAvatar">?</div>
+      <span id="userName"></span>
+      <span class="profile-chevron">▼</span>
+    </button>
+    <div class="profile-dropdown">
+      <div class="profile-info">
+        <div class="profile-info-avatar" id="dropAvatar">?</div>
+        <div class="profile-info-text">
+          <div class="profile-info-name" id="dropName">—</div>
+          <div class="profile-info-email" id="dropEmail">—</div>
+        </div>
+      </div>
+      <div class="dropdown-menu">
+        <a href="profile.html" class="dropdown-item"><span class="dropdown-icon">👤</span> My Profile</a>
+        <a href="profile.html" class="dropdown-item"><span class="dropdown-icon">📊</span> My Progress</a>
+        <div class="dropdown-divider"></div>
+        <button class="dropdown-item danger" onclick="handleLogout()"><span class="dropdown-icon">🚪</span> Logout</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="quiz-page">
+
+  <!-- PROGRESS STRIP -->
+  <div class="progress-strip animate-fade-up">
+    <span class="progress-label">🎧 Audio Diagnostic</span>
+    <span class="q-counter" id="q-counter">Question 1 of 5</span>
+  </div>
+  <div class="progress-bar animate-fade-up">
+    <div class="progress-fill" id="progress-fill" style="width:20%"></div>
+  </div>
+
+  <!-- QUIZ BODY -->
+  <div class="quiz-body">
+
+    <!-- QUIZ CARD -->
+    <div class="quiz-card animate-fade-up delay-200" id="quiz-card">
+
+      <div class="q-type-badge">🔊 Listen Carefully</div>
+
+      <div class="audio-status-bar">
+        <div class="audio-pulse"></div>
+        <span id="audio-status">🔊 Reading question aloud...</span>
+      </div>
+
+      <div class="question-text" id="question-text">What is 3 squared plus 4 squared?</div>
+      <div class="question-sub" id="question-sub">Speak or click your answer below.</div>
+
+      <div class="options-grid" id="options-grid">
+        <button class="option-btn" onclick="selectOption(this,'A')" data-val="A"><span class="opt-key">A</span><span id="opt-a">25</span></button>
+        <button class="option-btn" onclick="selectOption(this,'B')" data-val="B"><span class="opt-key">B</span><span id="opt-b">12</span></button>
+        <button class="option-btn" onclick="selectOption(this,'C')" data-val="C"><span class="opt-key">C</span><span id="opt-c">7</span></button>
+        <button class="option-btn" onclick="selectOption(this,'D')" data-val="D"><span class="opt-key">D</span><span id="opt-d">20</span></button>
+      </div>
+
+      <div class="feedback-box" id="feedback-box">
+        <div class="feedback-title" id="feedback-title">✅ Correct!</div>
+        <div class="feedback-text" id="feedback-text">Great job!</div>
+      </div>
+
+      <button class="btn btn-primary" id="submit-btn" onclick="nextQuestion()" style="display:none; width:100%; margin-top:0.5rem;">Next Question</button>
+    </div>
+
+    <!-- SCORE PANEL -->
+    <div class="quiz-card score-panel" id="score-panel">
+      <h2 class="text-cyan" style="margin-bottom:1.2rem;">Diagnostic Complete 🎧</h2>
+
+      <div class="score-circle" id="score-circle" style="--score:60">
+        <div class="score-num" id="score-num">3/<span style="font-size:1.4rem;color:var(--muted-text);">5</span></div>
+      </div>
+
+      <div style="display:flex;justify-content:center;gap:2.5rem;margin-bottom:1.2rem;color:var(--muted-text);font-size:1rem;">
+        <div>⏱️ Avg Time: <span id="time-stat" class="text-cyan" style="font-weight:700;">--</span></div>
+        <div>🔥 Max Streak: <span id="streak-stat" class="text-cyan" style="font-weight:700;">--</span></div>
+      </div>
+
+      <div class="level-badge" id="level-badge">Slow Learner</div>
+      <h3 class="result-title" id="result-title">You're on the right track!</h3>
+      <p class="result-desc" id="result-desc">The AI has classified your learner level.</p>
+
+      <button class="btn btn-primary" onclick="goToSection()" style="padding:0.9rem 2rem;width:auto;">
+        Begin My Journey →
+      </button>
+    </div>
+
+  </div><!-- end quiz-body -->
+</div><!-- end quiz-page -->
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+const questions = [
+  {
+    text: "What is 9 squared?",
+    sub: "Compute 9×9.",
+    options: {A:"27", B:"81", C:"18", D:"72"},
+    correct: "B",
+    hint: "9² means 9×9. 9×9 = 81.",
+    explanation: "9² = 9×9 = 81 ✅"
+  },
+  {
+    text: "What is the square root of 49?",
+    sub: "Square root means the number that squares to 49.",
+    options: {A:"5", B:"7", C:"9", D:"14"},
+    correct: "B",
+    hint: "7² = 49, so √49 = 7.",
+    explanation: "√49 = 7 ✅"
+  },
+  {
+    text: "Compute 4 squared plus 3 squared.",
+    sub: "Find each square, then add.",
+    options: {A:"26", B:"25", C:"19", D:"21"},
+    correct: "B",
+    hint: "4²=16 and 3²=9. 16+9 = 25.",
+    explanation: "4² + 3² = 16 + 9 = 25 ✅"
+  },
+  {
+    text: "If x = 6 and y = 8, what is x squared plus y squared?",
+    sub: "Square each value, then add.",
+    options: {A:"110", B:"100", C:"90", D:"64"},
+    correct: "B",
+    hint: "6²=36 and 8²=64. 36+64=100.",
+    explanation: "x² + y² = 36 + 64 = 100 ✅"
+  },
+  {
+    text: "What is the square root of 100?",
+    sub: "Find √100.",
+    options: {A:"8", B:"10", C:"12", D:"20"},
+    correct: "B",
+    hint: "10²=100, so √100=10.",
+    explanation: "√100 = 10 ✅"
+  }
+];
+
+let currentQ = 0;
+let scores = [];
+let selectedAnswer = null;
+let answered = false;
+let recognition = null;
+let isListening = false;
+let preferredVoice = null;
+let autoRepeatCount = 0;
+let autoFlowActive = false;
+let autoSkipPending = false;
+let questionStartTime = 0;
+let responseTimes = [];
+let totalRetryCount = 0; 
+let correctStreak = 0;
+let currentStreak = 0;
+const DATASET_PATH = "../blind_deaf_complete_mixed.xlsx";
+const PREDICT_API_URL = "http://127.0.0.1:5000/predict";
+let datasetModelPromise = null;
+let learnerRoute = 'blind_slow.html';
+
+function setAudioStatus(text) {
+  const el = document.getElementById('audio-status');
+  if (el) el.textContent = text;
+}
+
+function normalizeLevelLabel(raw) {
+  const v = String(raw || "").toLowerCase();
+  if (v.includes("slow")) return "Slow Learner";
+  if (v.includes("avg") || v.includes("average") || v.includes("medium")) return "Slow Learner";
+  if (v.includes("adv") || v.includes("advanced") || v.includes("fast") || v.includes("high")) return "Advanced Learner";
+  return null;
+}
+
+function findColumn(columns, keys) {
+  const lower = columns.map(c => ({ raw: c, low: String(c).toLowerCase() }));
+  for (const key of keys) {
+    const hit = lower.find(c => c.low.includes(key));
+    if (hit) return hit.raw;
+  }
+  return null;
+}
+
+async function loadDatasetModel() {
+  if (datasetModelPromise) return datasetModelPromise;
+  datasetModelPromise = (async () => {
+    if (typeof XLSX === "undefined") throw new Error("XLSX library not available");
+    const res = await fetch(DATASET_PATH);
+    if (!res.ok) throw new Error("Dataset file could not be loaded");
+    const buf = await res.arrayBuffer();
+    const wb = XLSX.read(buf, { type: "array" });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws, { defval: null });
+    if (!rows.length) throw new Error("Dataset is empty");
+
+    const columns = Object.keys(rows[0]);
+    const targetCol = findColumn(columns, ["level", "learner", "class", "label", "category"]);
+    const scoreCol = findColumn(columns, ["score", "percent", "accuracy", "marks", "math", "quiz"]);
+    const modeCol = findColumn(columns, ["mode", "disability", "impair", "type", "group"]);
+    if (!targetCol || !scoreCol) throw new Error("Required dataset columns not found");
+
+    return { rows, targetCol, scoreCol, modeCol };
+  })();
+  return datasetModelPromise;
+}
+
+async function predictLearnerLevelFromDataset(mode, scorePct) {
+  try {
+    const model = await loadDatasetModel();
+    let rows = model.rows;
+    if (model.modeCol) {
+      const filtered = rows.filter(r => String(r[model.modeCol] || "").toLowerCase().includes(mode));
+      if (filtered.length) rows = filtered;
+    }
+
+    const byLabel = {};
+    for (const r of rows) {
+      const lvl = normalizeLevelLabel(r[model.targetCol]);
+      const score = Number(r[model.scoreCol]);
+      if (!lvl || Number.isNaN(score)) continue;
+      if (!byLabel[lvl]) byLabel[lvl] = [];
+      byLabel[lvl].push(score);
+    }
+
+    const entries = Object.entries(byLabel).filter(([, arr]) => arr.length);
+    if (!entries.length) return null;
+
+    let bestLevel = null;
+    let bestDist = Infinity;
+    for (const [lvl, arr] of entries) {
+      const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
+      const dist = Math.abs(scorePct - mean);
+      if (dist < bestDist) {
+        bestDist = dist;
+        bestLevel = lvl;
+      }
+    }
+    return bestLevel;
+  } catch (err) {
+    console.warn("Dataset-based prediction failed:", err);
+    return null;
+  }
+}
+
+async function predictLearnerLevelFromApi(mode, scorePct, correctStreak, avgResponseTime) {
+  try {
+    const payload = {
+      math_score: scorePct,
+      reading_score: scorePct,
+      writing_score: scorePct,
+      score_percentage: scorePct
+    };
+    const res = await fetch(PREDICT_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return { level: data.level || null, explanation: data.explanation || "" };
+  } catch (err) {
+    console.warn("API prediction failed:", err);
+    return null;
+  }
+}
+
+function getPreferredVoice() {
+  const voices = window.speechSynthesis.getVoices();
+  if (!voices.length) return null;
+  if (preferredVoice) return preferredVoice;
+  const voice =
+    voices.find(v => /en/i.test(v.lang) && /(female|zira|samantha|google uk english female)/i.test(v.name)) ||
+    voices.find(v => /en/i.test(v.lang) && /(uk|gb)/i.test(v.lang + " " + v.name)) ||
+    voices.find(v => /en/i.test(v.lang)) ||
+    voices[0];
+  preferredVoice = voice || null;
+  return preferredVoice;
+}
+
+function speak(text, onEnd) {
+  window.speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  const voice = getPreferredVoice();
+  if (voice) utt.voice = voice;
+  utt.rate = 0.78;
+  utt.pitch = 0.95;
+  utt.volume = 1;
+  if(onEnd) utt.onend = onEnd;
+  window.speechSynthesis.speak(utt);
+}
+
+function speakQuestion(callback) {
+  const q = questions[currentQ];
+  const text = `Question ${currentQ+1}. ${q.text}. Options: A: ${q.options.A}. B: ${q.options.B}. C: ${q.options.C}. D: ${q.options.D}. Please say your answer.`;
+  setAudioStatus('🔊 Reading question aloud...');
+  speak(text, () => {
+    // Wait 1.5s after TTS ends before opening mic — prevents TTS echo being captured
+    setAudioStatus('⏳ Get ready to speak...');
+    setTimeout(() => {
+      if (!answered) {
+        setAudioStatus('🎙️ Listening for your answer...');
+        if (callback) callback();
+      }
+    }, 1500);
+  });
+}
+
+window.onload = () => {
+  // Pre-load voices with retry
+  const loadVoices = () => {
+    const v = window.speechSynthesis.getVoices();
+    if (v.length) { preferredVoice = null; getPreferredVoice(); }
+  };
+  loadVoices();
+  window.speechSynthesis.onvoiceschanged = loadVoices;
+
+  // Load first question UI
+  loadQuestion(0);
+
+  // Start auto voice flow after voices are ready
+  setTimeout(() => startAutoVoiceFlow(), 2000);
+};
+
+function loadQuestion(idx) {
+  const q = questions[idx];
+  answered = false;
+  selectedAnswer = null;
+  autoRepeatCount = 0;
+  autoSkipPending = false;
+  questionStartTime = Date.now();
+  
+  document.getElementById('question-text').textContent = q.text;
+  document.getElementById('question-sub').textContent = q.sub;
+  document.getElementById('opt-a').textContent = q.options.A;
+  document.getElementById('opt-b').textContent = q.options.B;
+  document.getElementById('opt-c').textContent = q.options.C;
+  document.getElementById('opt-d').textContent = q.options.D;
+  document.getElementById('q-counter').textContent = `Question ${idx+1} of ${questions.length}`;
+  document.getElementById('progress-fill').style.width = `${((idx)/questions.length)*100}%`;
+  document.getElementById('feedback-box').style.display = 'none';
+  setAudioStatus('🔊 Preparing question...');
+  
+  document.querySelectorAll('.option-btn').forEach(b => {
+    b.classList.remove('selected','correct','wrong');
+    b.disabled = false;  // Enable manual selection
+  });
+
+  document.getElementById('submit-btn').style.display = 'none';
+}
+
+function selectOption(btn, val) {
+  if(answered) return;
+  selectedAnswer = val;
+  document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  setTimeout(() => evaluateSelectedAnswer(), 250);
+}
+
+function submitAnswer() {
+  if(!selectedAnswer || answered) return;
+  evaluateSelectedAnswer();
+}
+
+function evaluateSelectedAnswer() {
+  if(!selectedAnswer || answered) return;
+  answered = true;
+  responseTimes.push((Date.now() - questionStartTime) / 1000);
+  const q = questions[currentQ];
+  const correct = selectedAnswer === q.correct;
+  scores.push(correct ? 1 : 0);
+
+  if (correct) {
+      currentStreak++;
+      if (currentStreak > correctStreak) correctStreak = currentStreak;
+  } else {
+      currentStreak = 0;
+  }
+
+  document.querySelectorAll('.option-btn').forEach(b => {
+    b.disabled = true;
+    if(b.dataset.val === q.correct) b.classList.add('correct');
+    if(b.dataset.val === selectedAnswer && !correct) b.classList.add('wrong');
+  });
+
+  const fb = document.getElementById('feedback-box');
+  const ft = document.getElementById('feedback-title');
+  const fd = document.getElementById('feedback-text');
+
+  if(correct) {
+    fb.className = 'feedback-box correct'; ft.textContent = '✅ Correct!';
+    fd.textContent = q.explanation; fb.style.display = 'block';
+    setAudioStatus('✅ Correct! Moving to next question...');
+    playChime(true);
+    // Fallback timer ensures advance even if TTS onEnd doesn't fire
+    const advanceTimer = setTimeout(() => nextQuestion(), 4000);
+    speak('Correct! ' + q.explanation, () => {
+      clearTimeout(advanceTimer);
+      setTimeout(() => nextQuestion(), 800);
+    });
+  } else {
+    fb.className = 'feedback-box wrong'; ft.textContent = '❌ Wrong Answer!';
+    fd.textContent = q.explanation; fb.style.display = 'block';
+    setAudioStatus('❌ Wrong Answer. Moving to next question...');
+    playChime(false);
+    // Fallback timer ensures advance even if TTS onEnd doesn't fire
+    const advanceTimer = setTimeout(() => nextQuestion(), 4000);
+    speak('Wrong Answer. ' + q.explanation, () => {
+      clearTimeout(advanceTimer);
+      setTimeout(() => nextQuestion(), 800);
+    });
+  }
+
+  // Hide manual next button — auto-advance handles it
+  document.getElementById('submit-btn').style.display = 'none';
+}
+
+let advancing = false;
+
+function nextQuestion() {
+  if (advancing) return;
+  advancing = true;
+  currentQ++;
+  if(currentQ >= questions.length) { advancing = false; showResults(); return; }
+  loadQuestion(currentQ);
+  advancing = false;
+  setTimeout(() => startAutoVoiceFlow(), 2000);
+}
+
+async function showResults() {
+  const total = scores.reduce((a,b) => a+b, 0);
+  const pct = Math.round((total/scores.length)*100);
+  const avgResponseTime = responseTimes.length
+    ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length
+    : 0;
+  const predicted = await predictLearnerLevelFromApi("blind", pct, correctStreak, avgResponseTime);
+  const predictedLevel = predicted ? predicted.level : null;
+  const explanation = predicted ? predicted.explanation : "";
+  let level, lClass, title, desc, route;
+
+  if(predictedLevel === "Slow Learner") {
+    level='Slow Learner'; lClass='level-slow'; route='blind_slow.html';
+    title='Keep Going — You Can Do It!';
+    desc='The system has identified you as a Slow Learner. You will receive detailed audio explanations, simplified questions, and guided audio support to help you understand concepts step by step.';
+  } else if(predictedLevel === "Average Learner") {
+    level='Slow Learner'; lClass='level-slow'; route='blind_slow.html';
+    title='Keep Going — You Can Do It!';
+    desc='The system has identified you as a Slow Learner. You will receive detailed audio explanations, simplified questions, and guided audio support to help you understand concepts step by step.';
+  } else if(predictedLevel === "Advanced Learner") {
+    level='Advanced Learner'; lClass='level-advanced'; route='blind_advanced.html';
+    title='Excellent Performance!';
+    desc='You are identified as an Advanced Learner. The system will provide focused audio explanations and challenging conceptual questions to deepen your knowledge.';
+  } else if(pct <= 60) {
+    level='Slow Learner'; lClass='level-slow'; route='blind_slow.html';
+    title='Keep Going — You Can Do It!';
+    desc='The system has identified you as a Slow Learner. You will receive detailed audio explanations, simplified questions, and guided audio support to help you understand concepts step by step.';
+  } else {
+    level='Advanced Learner'; lClass='level-advanced'; route='blind_advanced.html';
+    title='Excellent Performance!';
+    desc='You are identified as an Advanced Learner. The system will provide focused audio explanations and challenging conceptual questions to deepen your knowledge.';
+  }
+
+  learnerRoute = route;
+  localStorage.setItem('blindLevel', level);
+  localStorage.setItem('blindScore', pct);
+  localStorage.setItem('blindRoute', route);
+  localStorage.setItem('lastQuizType', 'blind');
+
+  document.getElementById('quiz-card').style.display = 'none';
+  document.getElementById('score-circle').style.setProperty('--score', pct);
+  document.getElementById('score-num').innerHTML = `${total}/<span style="font-size: 1.5rem; color: rgba(255,255,255,0.5);">5</span>`;
+  document.getElementById('time-stat').textContent = avgResponseTime.toFixed(1) + 's';
+  document.getElementById('streak-stat').textContent = correctStreak;
+  document.getElementById('level-badge').textContent = level;
+  localStorage.setItem('quizExplanation', explanation);
+  document.getElementById('level-badge').className = 'level-badge '+lClass;
+  document.getElementById('result-title').textContent = title;
+  document.getElementById('result-desc').textContent = desc;
+  document.getElementById('score-panel').style.display = 'block';
+  document.getElementById('progress-fill').style.width = '100%';
+
+  speak(`Quiz complete! You scored ${total} out of ${scores.length}. You are a ${level}. ${desc}`);
+}
+
+function goToSection() {
+  window.location.href = learnerRoute || 'blind_slow.html';
+}
+
+function toggleVoice() {
+  if (isListening) {
+    stopVoice();
+    return;
+  }
+  startListeningForAnswer(false);
+}
+
+function startAutoVoiceFlow() {
+  autoFlowActive = true;
+  // Speak the question, then start listening after speech ends
+  speakQuestion(() => {
+    if (!answered) {
+      startListeningForAnswer(true);
+    }
+  });
+}
+
+function startListeningForAnswer(isAutoFlow) {
+  if(!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+    setAudioStatus('⚠️ Voice not supported — please try another browser');
+    return;
+  }
+  if (answered) return;
+
+  // Cancel any lingering TTS before opening mic
+  window.speechSynthesis.cancel();
+
+  autoFlowActive = !!isAutoFlow;
+  autoSkipPending = false;
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang = 'en-US';
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 3;
+  let heardValidAnswer = false;
+
+  recognition.onstart = () => {
+    isListening = true;
+    setAudioStatus('🎙️ Listening... speak your answer');
+  };
+  recognition.onresult = (e) => {
+    const last = e.results[e.results.length - 1];
+    const transcript = (last && last[0] ? last[0].transcript : '').toLowerCase().trim();
+    setAudioStatus(transcript ? `Heard: "${transcript}"` : 'No clear answer heard');
+    const matchedKey = tryResolveSpokenAnswer(transcript);
+    if (matchedKey) {
+      const btn = document.querySelector(`[data-val="${matchedKey}"]`);
+      if (btn) {
+        selectOption(btn, matchedKey);
+        heardValidAnswer = true;
+        autoRepeatCount = 0;
+      }
+    }
+  };
+  recognition.onerror = () => {
+    setAudioStatus('Could not hear — trying again');
+    autoSkipPending = true;
+  };
+  recognition.onend = () => {
+    isListening = false;
+    recognition = null;
+    if (answered) return;
+    if (!heardValidAnswer && (autoFlowActive || autoSkipPending)) {
+      handleNoAnswer();
+    }
+  };
+  recognition.start();
+}
+
+function stopVoice() {
+  autoFlowActive = false;
+  if(recognition) recognition.stop();
+}
+
+function handleNoAnswer() {
+  autoRepeatCount++;
+  totalRetryCount++;
+  if (autoRepeatCount < 3) {
+    const triesLeft = 3 - autoRepeatCount;
+    const msg = `I did not catch your answer. Repeating question. ${triesLeft} more ${triesLeft === 1 ? 'try' : 'tries'} left.`;
+    setAudioStatus(`No answer detected. Repeating (${triesLeft} tries left)...`);
+    speak(msg, () => {
+      setTimeout(() => {
+        speakQuestion(() => {
+          if (!answered) startListeningForAnswer(true);
+        });
+      }, 2000);
+    });
+    return;
+  }
+
+  autoRepeatCount = 0;
+  autoFlowActive = false;
+  responseTimes.push((Date.now() - questionStartTime) / 1000);
+  setAudioStatus('No answer after 3 tries. Skipping...');
+  scores.push(0);
+  currentStreak = 0;
+  speak('No answer detected after three attempts. Moving to next question.');
+  setTimeout(() => nextQuestion(), 1500);
+}
+
+function tryResolveSpokenAnswer(transcript) {
+  if (!transcript) return null;
+  const q = questions[currentQ];
+  const cleaned = transcript.replace(/[^\w\s]/g, ' ');
+  const words = cleaned.split(/\s+/).filter(Boolean);
+  const joined = ` ${words.join(' ')} `;
+  const numberWords = {
+    zero: '0', one: '1', two: '2', three: '3', four: '4',
+    five: '5', six: '6', seven: '7', eight: '8', nine: '9',
+    ten: '10', eleven: '11', twelve: '12', thirteen: '13',
+    fourteen: '14', fifteen: '15', sixteen: '16', seventeen: '17',
+    eighteen: '18', nineteen: '19', twenty: '20', twentyfive: '25',
+    twentyseven: '27', fortynine: '49', seventytwo: '72',
+    eightyone: '81', ninety: '90', hundred: '100', onehundred: '100',
+    hundredten: '110'
+  };
+
+  for (const [key, val] of Object.entries(q.options)) {
+    const optionVal = String(val).toLowerCase().trim();
+    const compactVal = optionVal.replace(/\s+/g, '');
+    if (
+      joined.includes(` ${key.toLowerCase()} `) ||
+      joined.includes(` option ${key.toLowerCase()} `) ||
+      joined.includes(` ${optionVal} `) ||
+      cleaned.includes(optionVal)
+    ) {
+      return key;
+    }
+    for (const w of words) {
+      const normalizedWord = numberWords[w] || w;
+      if (normalizedWord === optionVal || normalizedWord === compactVal) return key;
+    }
+  }
+  return null;
+}
+
+let sharedAudioCtx = null;
+
+function playChime(correct) {
+  if (!sharedAudioCtx) sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const ctx = sharedAudioCtx;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.frequency.value = correct ? 880 : 220;
+  osc.type = correct ? 'sine' : 'sawtooth';
+  gain.gain.setValueAtTime(0.3, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+  osc.start(); osc.stop(ctx.currentTime + 0.8);
+}
+</script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  const firebaseConfig = { apiKey:"AIzaSyDS8hshom-srb-96anMSjr2wpq2_1A9Nk0", authDomain:"simplemath-20773.firebaseapp.com", projectId:"simplemath-20773", storageBucket:"simplemath-20773.firebasestorage.app", messagingSenderId:"798012087027", appId:"1:798012087027:web:8db7ea6b21cea5fdacb586" };
+  const auth = getAuth(initializeApp(firebaseConfig));
+  onAuthStateChanged(auth, (user) => {
+    if (!user) { window.location.href = 'login.html'; return; }
+    const name = user.displayName || 'User';
+    const initials = name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+    document.getElementById('userName').textContent = name.split(' ')[0];
+    document.getElementById('dropName').textContent = name;
+    document.getElementById('dropEmail').textContent = user.email || '';
+    if (user.photoURL) {
+      document.getElementById('navAvatar').innerHTML = `<img src="${user.photoURL}"/>`;
+      document.getElementById('dropAvatar').innerHTML = `<img src="${user.photoURL}"/>`;
+    } else {
+      document.getElementById('navAvatar').textContent = initials;
+      document.getElementById('dropAvatar').textContent = initials;
+    }
+  });
+  window.toggleProfile = () => document.getElementById('profileWrap').classList.toggle('open');
+  window.handleLogout = async () => { await signOut(auth); window.location.href = 'login.html'; };
+  document.addEventListener('click', (e) => { const w = document.getElementById('profileWrap'); if(w && !w.contains(e.target)) w.classList.remove('open'); });
+</script>
+</body>
+</html>

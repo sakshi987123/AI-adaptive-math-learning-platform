@@ -1,0 +1,66 @@
+<svg width="320" height="180" viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg4-3d" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7c3aed;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#8b5cf6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#a855f7;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="box-3d" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#a855f7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6366f1;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow-3d">
+      <feDropShadow dx="0" dy="12" stdDeviation="15" flood-opacity="0.7"/>
+    </filter>
+    <filter id="glow-3d">
+      <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background with depth -->
+  <rect width="320" height="180" fill="url(#bg4-3d)"/>
+  
+  <!-- 3D Rearrangement boxes -->
+  <g transform="translate(160, 85)" filter="url(#shadow-3d)">
+    <!-- Left box -->
+    <g transform="translate(-85, -35)">
+      <rect x="0" y="0" width="70" height="30" fill="rgba(168,85,247,0.4)" rx="6"/>
+      <rect x="0" y="0" width="70" height="30" fill="none" stroke="rgba(168,85,247,0.8)" stroke-width="2" rx="6"/>
+      <text x="35" y="20" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="12" font-weight="bold">a² + b²</text>
+    </g>
+    
+    <!-- Arrow with 3D effect -->
+    <g transform="translate(-10, -20)">
+      <path d="M 0,0 L 30,0" stroke="#fbbf24" stroke-width="4" stroke-linecap="round" filter="url(#glow-3d)"/>
+      <path d="M 25,-5 L 30,0 L 25,5" fill="#fbbf24" stroke="#fbbf24" stroke-width="2" stroke-linejoin="round"/>
+    </g>
+    
+    <!-- Right box -->
+    <g transform="translate(20, -35)">
+      <rect x="0" y="0" width="70" height="30" fill="rgba(99,102,241,0.4)" rx="6"/>
+      <rect x="0" y="0" width="70" height="30" fill="none" stroke="rgba(99,102,241,0.8)" stroke-width="2" rx="6"/>
+      <text x="35" y="20" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="12" font-weight="bold">c²</text>
+    </g>
+    
+    <!-- Floating equation -->
+    <text x="0" y="15" text-anchor="middle" fill="#fbbf24" font-family="Arial, sans-serif" font-size="16" font-weight="bold" filter="url(#glow-3d)">a = √(c²-b²)</text>
+  </g>
+  
+  <!-- Mathematical symbols -->
+  <g opacity="0.6">
+    <text x="50" y="40" fill="#a855f7" font-family="Arial, sans-serif" font-size="14" font-weight="bold" filter="url(#glow-3d)">√</text>
+    <text x="270" y="65" fill="#6366f1" font-family="Arial, sans-serif" font-size="14" font-weight="bold" filter="url(#glow-3d)">∑</text>
+    <text x="80" y="130" fill="#a855f7" font-family="Arial, sans-serif" font-size="14" font-weight="bold" filter="url(#glow-3d)">∫</text>
+    <text x="240" cy="110" fill="#6366f1" font-family="Arial, sans-serif" font-size="14" font-weight="bold" filter="url(#glow-3d)">π</text>
+  </g>
+  
+  <!-- Title section with 3D effect -->
+  <rect x="10" y="140" width="300" height="35" fill="rgba(124,58,237,0.9)" rx="8" filter="url(#shadow-3d)"/>
+  <rect x="15" y="145" width="290" height="25" fill="rgba(168,85,247,0.8)" rx="6"/>
+  <text x="160" y="160" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="20" font-weight="bold" filter="url(#glow-3d)">Lesson 4</text>
+  <text x="160" y="175" text-anchor="middle" fill="#fbbf24" font-family="Arial, sans-serif" font-size="11" font-weight="600">Missing Side</text>
+</svg>

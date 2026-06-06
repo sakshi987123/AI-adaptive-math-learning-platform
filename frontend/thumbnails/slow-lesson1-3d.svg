@@ -1,0 +1,49 @@
+<svg width="320" height="180" viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg-slow1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e8f5e7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d4a574;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="tri-slow1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f59e0b;stop-opacity:1" />
+    </linearGradient>
+    <filter id="soft-shadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.3"/>
+    </filter>
+    <filter id="soft-glow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Soft background -->
+  <rect width="320" height="180" fill="url(#bg-slow1)"/>
+  
+  <!-- Gentle grid pattern -->
+  <pattern id="soft-grid" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse">
+    <circle cx="15" cy="15" r="1" fill="rgba(251,191,36,0.08)"/>
+  </pattern>
+  <rect width="320" height="180" fill="url(#soft-grid)"/>
+  
+  <!-- Simple triangle with soft edges -->
+  <g transform="translate(160, 85)" filter="url(#soft-shadow)">
+    <polygon points="-40,-25 -40,25 40,25" fill="rgba(251,191,36,0.15)" stroke="url(#tri-slow1)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" filter="url(#soft-glow)"/>
+    
+    <!-- Right angle indicator -->
+    <path d="M -40,15 L -25,15 L -25,25" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+    
+    <!-- Simple labels -->
+    <text x="-40" y="-35" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="14" font-weight="600">a</text>
+    <text x="-40" y="45" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="14" font-weight="600">b</text>
+    <text x="0" y="15" text-anchor="middle" fill="#f59e0b" font-family="Arial, sans-serif" font-size="16" font-weight="bold">c</text>
+  </g>
+  
+  <!-- Title section -->
+  <rect x="10" y="140" width="300" height="30" fill="rgba(251,191,36,0.2)" rx="8"/>
+  <text x="160" y="158" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="18" font-weight="600">Lesson 1</text>
+  <text x="160" y="172" text-anchor="middle" fill="#f59e0b" font-family="Arial, sans-serif" font-size="10">What is a Right Triangle?</text>
+</svg>

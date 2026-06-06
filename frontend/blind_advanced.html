@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blind Advanced Learner — Pythagoras Audio Lesson</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body { background: #081b2e; color: #f8fafc; font-family: 'Inter', sans-serif; }
+    .lesson-card { max-width: 1200px; margin: 3rem auto; padding: 2.5rem; border-radius: 28px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); }
+    .lesson-header { margin-bottom: 1.5rem; }
+    .lesson-header h1 { font-size: 2rem; margin-bottom: 0.8rem; }
+    .lesson-copy { font-size: 1rem; line-height: 1.7; color: #cbd5e1; margin-bottom: 1.5rem; }
+    .audio-status-bar { margin-bottom: 1.5rem; }
+    .btn-row { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; }
+    .btn { padding: 1rem 1.5rem; border-radius: 999px; border: none; cursor: pointer; font-weight: 700; }
+    .btn-primary { background: #22d3ee; color: #0f172a; }
+    .btn-secondary { background: rgba(255,255,255,0.08); color: #fff; }
+
+    .content-row {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 1.5rem;
+      margin-top: 2rem;
+      align-items: start;
+    }
+    .transcript-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 1.5rem;
+    }
+    .transcript-card h2 { font-size: 1.1rem; margin-bottom: 0.75rem; color: #22d3ee; }
+    #transcript { font-size: 0.92rem; line-height: 1.8; color: #cbd5e1; }
+
+    .chat-card {
+      background: rgba(14,116,144,0.08);
+      border: 1px solid rgba(34,211,238,0.2);
+      border-radius: 20px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      position: sticky;
+      top: 1rem;
+    }
+    .chat-card-header h2 { font-size: 1rem; color: #22d3ee; margin: 0 0 0.2rem; }
+    .chat-card-header p { font-size: 0.78rem; color: #64748b; margin: 0; }
+
+    .mic-btn-wrap { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+    #mic-btn {
+      width: 72px; height: 72px; border-radius: 50%; border: none; cursor: pointer;
+      background: linear-gradient(135deg, #0e7490, #164e63);
+      font-size: 1.8rem; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 24px rgba(34,211,238,0.35); transition: all 0.3s;
+    }
+    #mic-btn:hover { transform: scale(1.08); }
+    #chat-status { font-size: 0.78rem; color: #22d3ee; text-align: center; }
+
+    .chat-input-row { display: flex; gap: 0.5rem; }
+    #chat-input {
+      flex: 1; padding: 0.65rem 0.9rem; border-radius: 10px;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      color: #fff; font-size: 0.85rem; outline: none;
+    }
+    #chat-input::placeholder { color: rgba(148,163,184,0.4); }
+    .ask-btn {
+      padding: 0.65rem 1rem; border-radius: 10px; border: none; cursor: pointer;
+      background: #0e7490; color: #fff; font-weight: 700; font-size: 0.82rem;
+    }
+    #chat-history {
+      display: flex; flex-direction: column; gap: 0.75rem;
+      max-height: 320px; overflow-y: auto;
+      scrollbar-width: thin; scrollbar-color: rgba(34,211,238,0.3) transparent;
+    }
+    @media (max-width: 900px) {
+      .content-row { grid-template-columns: 1fr; }
+      .chat-card { position: static; }
+    }
+  </style>
+</head>
+<body>
+  <nav style="padding: 1rem 1.5rem; display:flex; justify-content:space-between; align-items:center;">
+    <a href="Quiz blind.html" class="nav-logo" style="color:#7dd3fc; text-decoration:none; font-weight:700;">SimplexMath</a>
+    <div class="nav-badge text-cyan border-cyan">Audio Lesson</div>
+  </nav>
+
+  <main class="lesson-card" role="main">
+    <section class="lesson-header">
+      <h1>Pythagoras Theorem — Advanced Audio Lesson</h1>
+      <p class="lesson-copy">This page loads an advanced ChatGPT-generated audio lesson from the backend and plays it step-by-step for blind learners.</p>
+    </section>
+
+    <div class="audio-status-bar" id="audio-status">
+      <div class="audio-pulse"></div>
+      <span>Loading your advanced lesson...</span>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="play-stop-btn" type="button" disabled onclick="togglePlayStop()">▶ Play</button>
+      <button class="btn btn-primary" id="replay-btn" type="button" disabled onclick="replayLesson()">↺ Replay</button>
+      <button class="btn btn-secondary" onclick="location.href='Quiz blind.html'">Back to Quiz</button>
+      <button class="btn btn-primary" onclick="location.href='blind_advanced_test.html'">Take Evaluation Quiz</button>
+    </div>
+
+    <div class="content-row">
+      <!-- TRANSCRIPT -->
+      <div class="transcript-card">
+        <h2>📄 Audio Transcript</h2>
+        <p id="transcript">Loading transcript from the lesson generator...</p>
+      </div>
+
+      <!-- CHATBOT CARD -->
+      <div class="chat-card">
+        <div class="chat-card-header">
+          <h2>🤖 AI Tutor</h2>
+          <p>Ask anything about the lesson</p>
+        </div>
+
+        <div class="mic-btn-wrap">
+          <button id="mic-btn" onclick="startListening()">🎙️</button>
+          <div id="chat-status">Tap mic to ask a question</div>
+        </div>
+
+        <div class="chat-input-row">
+          <input id="chat-input" type="text" placeholder="Type your question..."
+            onkeydown="if(event.key==='Enter') sendQuestion()" />
+          <button class="ask-btn" onclick="sendQuestion()">Ask</button>
+        </div>
+
+        <div id="chat-history"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // ── STATE ──
+    let lessonSegments = [];
+    let isPlaying = false;
+    let currentIndex = 0;
+    let lessonLoaded = false;
+    let chatRecognition = null;
+    let isChatListening = false;
+    let isChatSpeaking = false;
+
+    // ── HELPERS ──
+    function updateStatus(msg) {
+      const el = document.getElementById('audio-status');
+      if (el) el.querySelector('span').textContent = msg;
+    }
+
+    function setChatStatus(msg) {
+      const el = document.getElementById('chat-status');
+      if (el) el.textContent = msg;
+    }
+
+    function setPlayBtn(playing) {
+      const btn = document.getElementById('play-stop-btn');
+      if (!btn) return;
+      btn.textContent = playing ? '⏹ Stop' : '▶ Play';
+      btn.style.background = playing ? '#dc2626' : '#22d3ee';
+      btn.style.color = playing ? '#fff' : '#0f172a';
+    }
+
+    function getPreferredVoice() {
+      const voices = window.speechSynthesis.getVoices();
+      if (!voices.length) return null;
+      return (
+        voices.find(v => /en/i.test(v.lang) && /(female|zira|samantha|google)/i.test(v.name)) ||
+        voices.find(v => /en/i.test(v.lang)) ||
+        voices[0]
+      );
+    }
+
+    function pauseLesson() {
+      if (isPlaying) {
+        window.speechSynthesis.cancel();
+        isPlaying = false;
+        setPlayBtn(false);
+        updateStatus('⏸ Paused — chatbot active. Press ▶ Play to resume.');
+      }
+    }
+
+    // ── LESSON PLAYBACK ──
+    function speakChunk(index) {
+      if (!isPlaying) return;
+      if (index >= lessonSegments.length) {
+        isPlaying = false;
+        setPlayBtn(false);
+        updateStatus('✅ Lesson complete. Press ▶ Play to hear it again.');
+        return;
+      }
+      currentIndex = index;
+      const total = lessonSegments.length;
+      updateStatus(`🔊 Playing part ${index + 1} of ${total}...`);
+      window.speechSynthesis.cancel();
+
+      const text = lessonSegments[index];
+      const utt = new SpeechSynthesisUtterance(text);
+      const voice = getPreferredVoice();
+      if (voice) utt.voice = voice;
+      utt.rate = 1.0; utt.pitch = 1; utt.volume = 1;
+
+      const estimatedMs = Math.max((text.length / 5 / 160) * 60000 + 1000, 2500);
+      let advanced = false;
+
+      const fallbackTimer = setTimeout(() => {
+        if (!advanced && isPlaying) { advanced = true; speakChunk(index + 1); }
+      }, estimatedMs);
+
+      utt.onend = () => {
+        if (!advanced && isPlaying) { advanced = true; clearTimeout(fallbackTimer); setTimeout(() => speakChunk(index + 1), 300); }
+      };
+      utt.onerror = () => {
+        if (!advanced && isPlaying) { advanced = true; clearTimeout(fallbackTimer); setTimeout(() => speakChunk(index + 1), 300); }
+      };
+      window.speechSynthesis.speak(utt);
+    }
+
+    function speakLesson(startIndex = 0) {
+      window.speechSynthesis.cancel();
+      currentIndex = startIndex;
+      isPlaying = true;
+      setPlayBtn(true);
+      speakChunk(startIndex);
+    }
+
+    function togglePlayStop() {
+      if (isPlaying) {
+        window.speechSynthesis.cancel();
+        isPlaying = false;
+        setPlayBtn(false);
+        updateStatus('⏸ Paused — press ▶ Play to resume');
+      } else {
+        if (!lessonLoaded) return;
+        isPlaying = true;
+        setPlayBtn(true);
+        speakChunk(currentIndex);
+      }
+    }
+
+    function replayLesson() {
+      window.speechSynthesis.cancel();
+      currentIndex = 0;
+      isPlaying = true;
+      setPlayBtn(true);
+      speakChunk(0);
+    }
+
+    async function loadLesson() {
+      updateStatus('Loading your AI lesson...');
+      document.getElementById('play-stop-btn').disabled = true;
+      document.getElementById('replay-btn').disabled = true;
+      try {
+        const response = await fetch('http://127.0.0.1:5000/generate_lesson?level=Advanced');
+        if (!response.ok) throw new Error('Lesson generation failed');
+        const data = await response.json();
+        lessonSegments = Array.isArray(data.slides) && data.slides.length ? data.slides : [data.script];
+        document.getElementById('transcript').textContent = data.script;
+        document.getElementById('play-stop-btn').disabled = false;
+        document.getElementById('replay-btn').disabled = false;
+        lessonLoaded = true;
+        const badge = data.source === 'api' ? '✅ AI lesson ready' : '⚠️ Offline lesson';
+        updateStatus(`${badge} (${lessonSegments.length} parts) — starting...`);
+        setTimeout(() => speakLesson(0), 1200);
+      } catch (err) {
+        updateStatus('⚠️ Cannot load lesson. Make sure the backend is running on port 5000.');
+        document.getElementById('transcript').textContent = 'Error: ' + err.message;
+      }
+    }
+
+    window.onload = () => {
+      window.speechSynthesis.getVoices();
+      if (window.speechSynthesis.onvoiceschanged !== undefined) {
+        window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+      }
+      loadLesson();
+    };
+
+    // ── CHATBOT MIC ──
+    function startListening() {
+      if (isChatListening || isChatSpeaking) return;
+      if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+        setChatStatus('⚠️ Voice not supported. Use Chrome.');
+        return;
+      }
+      pauseLesson();
+
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      chatRecognition = new SR();
+      chatRecognition.lang = 'en-US';
+      chatRecognition.interimResults = true;
+      chatRecognition.maxAlternatives = 1;
+      chatRecognition.continuous = false;
+
+      const btn = document.getElementById('mic-btn');
+      btn.style.background = 'linear-gradient(135deg,#dc2626,#b91c1c)';
+      btn.style.boxShadow = '0 0 24px rgba(220,38,38,0.6)';
+      btn.textContent = '🔴';
+      isChatListening = true;
+      setChatStatus('🎙️ Listening... speak your question');
+
+      let finalTranscript = '';
+
+      chatRecognition.onresult = (e) => {
+        let interim = '';
+        finalTranscript = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          if (e.results[i].isFinal) finalTranscript += e.results[i][0].transcript;
+          else interim += e.results[i][0].transcript;
+        }
+        setChatStatus(`🎙️ Hearing: "${finalTranscript || interim}"`);
+      };
+
+      chatRecognition.onerror = (e) => {
+        setChatStatus(`⚠️ Mic error: ${e.error}. Try again.`);
+        resetMicBtn();
+      };
+
+      chatRecognition.onend = () => {
+        isChatListening = false;
+        resetMicBtn();
+        if (finalTranscript.trim()) {
+          document.getElementById('chat-input').value = finalTranscript.trim();
+          sendQuestion(finalTranscript.trim());
+        } else {
+          setChatStatus('No speech detected. Try again.');
+        }
+      };
+
+      chatRecognition.start();
+    }
+
+    function resetMicBtn() {
+      isChatListening = false;
+      const btn = document.getElementById('mic-btn');
+      btn.style.background = 'linear-gradient(135deg,#0e7490,#164e63)';
+      btn.style.boxShadow = '0 0 24px rgba(34,211,238,0.35)';
+      btn.textContent = '🎙️';
+    }
+
+    async function sendQuestion(questionOverride) {
+      const input = document.getElementById('chat-input');
+      const question = (questionOverride || input.value).trim();
+      if (!question) { setChatStatus('Please ask a question first.'); return; }
+      pauseLesson();
+      input.value = '';
+      addChatBubble('user', question);
+      setChatStatus('🤔 AI is thinking...');
+      try {
+        const res = await fetch('http://127.0.0.1:5000/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question, level: 'advanced' })
+        });
+        if (!res.ok) throw new Error('Server error');
+        const data = await res.json();
+        addChatBubble('ai', data.answer);
+        setChatStatus('🔊 Reading answer...');
+        speakAnswer(data.answer);
+      } catch (err) {
+        const msg = 'Sorry, I could not connect to the AI. Make sure the backend is running on port 5000.';
+        addChatBubble('ai', msg);
+        setChatStatus('⚠️ Connection error');
+        speakAnswer(msg);
+      }
+    }
+
+    function speakAnswer(text) {
+      window.speechSynthesis.cancel();
+      isChatSpeaking = true;
+      const utt = new SpeechSynthesisUtterance(text);
+      const voice = getPreferredVoice();
+      if (voice) utt.voice = voice;
+      utt.rate = 1.0; utt.pitch = 1; utt.volume = 1;
+
+      const estimatedMs = Math.max((text.length / 5 / 160) * 60000 + 1000, 3000);
+      let done = false;
+      const fallback = setTimeout(() => { if (!done) { done = true; onAnswerDone(); } }, estimatedMs);
+      utt.onend = () => { if (!done) { done = true; clearTimeout(fallback); onAnswerDone(); } };
+      utt.onerror = () => { if (!done) { done = true; clearTimeout(fallback); onAnswerDone(); } };
+      window.speechSynthesis.speak(utt);
+    }
+
+    function onAnswerDone() {
+      isChatSpeaking = false;
+      setChatStatus('✅ Done. Tap mic to ask another question.');
+    }
+
+    function addChatBubble(role, text) {
+      const history = document.getElementById('chat-history');
+      const bubble = document.createElement('div');
+      bubble.style.cssText = `padding:0.75rem 1rem; border-radius:14px; font-size:0.85rem; line-height:1.6; word-break:break-word;
+        ${role === 'user'
+          ? 'background:rgba(14,116,144,0.15); border:1px solid rgba(34,211,238,0.3); color:#a5f3fc; margin-left:auto; max-width:92%;'
+          : 'background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#e2e8f0; max-width:92%;'}`;
+      bubble.innerHTML = `<strong style="font-size:0.72rem;opacity:0.55;display:block;margin-bottom:0.3rem;">${role === 'user' ? '🧑 You' : '🤖 AI Tutor'}</strong>${text}`;
+      history.appendChild(bubble);
+      history.scrollTop = history.scrollHeight;
+    }
+  </script>
+</body>
+</html>

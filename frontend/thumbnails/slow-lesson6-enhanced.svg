@@ -1,0 +1,89 @@
+<svg width="320" height="180" viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg-enhanced6" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4c1d95;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1e3a8a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e293b;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="complete-enhanced6" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f59e0b;stop-opacity:1" />
+    </linearGradient>
+    <filter id="deep-shadow">
+      <feDropShadow dx="0" dy="20" stdDeviation="30" flood-opacity="0.9"/>
+    </filter>
+    <filter id="bright-glow">
+      <feGaussianBlur stdDeviation="12" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <radialGradient id="spotlight">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0" />
+    </radialGradient>
+  </defs>
+  
+  <!-- Dramatic background -->
+  <rect width="320" height="180" fill="url(#bg-enhanced6)"/>
+  
+  <!-- Spotlight effect -->
+  <ellipse cx="160" cy="90" rx="160" ry="80" fill="url(#spotlight)" opacity="0.5"/>
+  
+  <!-- Star burst background -->
+  <g transform="translate(160, 85)" opacity="0.3">
+    <path d="M 0,-60 L 20,-50 L 30,-70 L 40,-45 L 60,-50 L 45,-30 L 70,-20 L 40,-10 L 50,10 L 30,0 L 20,20 L 0,10 L -20,20 L -30,0 L -50,10 L -70,-20 L -45,-30 L -60,-50 L -40,-45 L -30,-70 L -20,-50 Z" 
+          fill="rgba(251,191,36,0.2)" stroke="rgba(251,191,36,0.4)" stroke-width="1"/>
+  </g>
+  
+  <!-- Dramatic completion badge -->
+  <g transform="translate(160, 85)" filter="url(#deep-shadow)">
+    <!-- Multiple layers for depth -->
+    <circle cx="0" cy="0" r="60" fill="rgba(251,191,36,0.15)" stroke="rgba(251,191,36,0.3)" stroke-width="1"/>
+    <circle cx="0" cy="0" r="55" fill="rgba(251,191,36,0.25)" stroke="rgba(251,191,36,0.4)" stroke-width="1.5"/>
+    <circle cx="0" cy="0" r="50" fill="rgba(251,191,36,0.3)" stroke="rgba(251,191,36,0.5)" stroke-width="2"/>
+    <circle cx="0" cy="0" r="45" fill="rgba(251,191,36,0.4)" stroke="rgba(251,191,36,0.6)" stroke-width="2.5"/>
+    <circle cx="0" cy="0" r="40" fill="url(#complete-enhanced6)" stroke="rgba(251,191,36,0.8)" stroke-width="3"/>
+    <circle cx="0" cy="0" r="35" fill="none" stroke="white" stroke-width="4" filter="url(#bright-glow)"/>
+    
+    <!-- Dramatic checkmark -->
+    <g transform="scale(1.2)" filter="url(#bright-glow)">
+      <path d="M -25,0 L -10,15 L 15,15 L 35,-15" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="-25" cy="0" r="4" fill="white"/>
+      <circle cx="35" cy="-15" r="4" fill="white"/>
+    </g>
+    
+    <!-- Complete text with glow -->
+    <text x="0" y="-8" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="20" font-weight="bold" filter="url(#bright-glow)">COMPLETE</text>
+    <text x="0" y="12" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="14" font-weight="600" filter="url(#bright-glow)">ALL LESSONS</text>
+  </g>
+  
+  <!-- Floating completion particles -->
+  <g opacity="0.9">
+    <circle cx="60" cy="40" r="4" fill="#fbbf24" filter="url(#bright-glow)">
+      <animate attributeName="r" values="4;6;4" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="270" cy="65" r="3" fill="#f59e0b" filter="url(#bright-glow)">
+      <animate attributeName="r" values="3;5;3" dur="1.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="80" cy="135" r="5" fill="#fbbf24" filter="url(#bright-glow)">
+      <animate attributeName="r" values="5;7;5" dur="2.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="240" cy="125" r="3.5" fill="#f59e0b" filter="url(#bright-glow)">
+      <animate attributeName="r" values="3.5;5.5;3.5" dur="1.8s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="100" cy="50" r="3" fill="#fbbf24" filter="url(#bright-glow)">
+      <animate attributeName="r" values="3;4.5;3" dur="2.2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="220" cy="140" r="4" fill="#f59e0b" filter="url(#bright-glow)">
+      <animate attributeName="r" values="4;6;4" dur="1.7s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Title section with dramatic depth -->
+  <rect x="10" y="140" width="300" height="35" fill="rgba(76,29,149,0.95)" rx="8" filter="url(#deep-shadow)"/>
+  <rect x="15" y="145" width="290" height="25" fill="rgba(251,191,36,0.9)" rx="6"/>
+  <text x="160" y="158" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="30" font-weight="bold" filter="url(#bright-glow)">Lesson 6</text>
+  <text x="160" y="176" text-anchor="middle" fill="#fbbf24" font-family="Arial, sans-serif" font-size="13" font-weight="600">Complete Revision</text>
+</svg>

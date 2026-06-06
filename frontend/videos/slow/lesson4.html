@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 4 - Finding the Hypotenuse</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#0a0917;--card:#13112a;--card2:#1c1938;--accent:#a78bfa;--accent2:#f59e0b;--accent3:#34d399;--accent4:#f87171;--text:#f0eeff;--muted:#9b96c4;--border:#2e2a54;--lesson-color:#f87171;}
+  body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px}
+  .outer{width:100%;max-width:780px}
+  .top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .lesson-label{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--lesson-color);background:rgba(248,113,113,.12);border:1.5px solid var(--lesson-color);border-radius:50px;padding:4px 14px}
+  .lesson-nav-links{display:flex;gap:8px}
+  .nav-link{font-size:12px;font-weight:700;color:var(--muted);text-decoration:none;padding:4px 10px;border-radius:50px;border:1.5px solid var(--border);transition:all .2s}
+  .nav-link:hover{color:var(--accent);border-color:var(--accent)}
+  .nav-link.current{color:var(--lesson-color);border-color:var(--lesson-color)}
+  h1{font-size:clamp(20px,4vw,28px);font-weight:900;line-height:1.2;margin-bottom:4px}
+  .subtitle{color:var(--muted);font-size:14px;margin-bottom:16px}
+  .stage{background:var(--card);border-radius:24px;border:1.5px solid var(--border);overflow:hidden}
+  .timeline{height:4px;background:var(--border)}
+  .timeline-fill{height:100%;background:linear-gradient(90deg,var(--lesson-color),var(--accent2));transition:width .1s linear;width:0%}
+  .step-indicators{display:flex;border-bottom:1.5px solid var(--border)}
+  .step-tab{flex:1;padding:8px 4px;text-align:center;font-size:11px;font-weight:800;color:var(--muted);border-right:1px solid var(--border);cursor:pointer;transition:all .3s}
+  .step-tab:last-child{border-right:none}
+  .step-tab.active{color:var(--lesson-color);background:rgba(248,113,113,.1)}
+  .step-tab.done{color:var(--accent3)}
+  .content-area{display:grid;grid-template-columns:1fr 1fr;min-height:380px}
+  @media(max-width:600px){.content-area{grid-template-columns:1fr}}
+  .visual-panel{padding:28px 20px;display:flex;align-items:center;justify-content:center;border-right:1.5px solid var(--border);background:var(--card2)}
+  @media(max-width:600px){.visual-panel{border-right:none;border-bottom:1.5px solid var(--border)}}
+  .sign-panel{padding:20px;display:flex;flex-direction:column;justify-content:center;gap:14px}
+  .caption{font-size:15px;line-height:1.8;color:var(--text)}
+  .sign-block{background:rgba(248,113,113,.07);border:1.5px solid rgba(248,113,113,.3);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px}
+  .sign-title{font-size:11px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--lesson-color)}
+  .sign-illustration{display:flex;align-items:center;gap:10px}
+  .hand-emoji{font-size:32px;filter:drop-shadow(0 2px 8px rgba(248,113,113,.4))}
+  .sign-text{font-size:13px;font-weight:700;color:var(--text)}
+  .sign-instruction{font-size:12px;color:var(--muted);line-height:1.5;border-top:1px solid var(--border);padding-top:8px}
+  .controls{padding:14px 20px;border-top:1.5px solid var(--border);display:flex;align-items:center;gap:12px;background:rgba(0,0,0,.2)}
+  .btn{padding:9px 20px;border-radius:50px;border:none;font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;cursor:pointer;transition:all .25s;display:inline-flex;align-items:center;gap:6px}
+  .btn-play{background:var(--lesson-color);color:#0a0917;min-width:88px}
+  .btn-play:hover{filter:brightness(1.1)}
+  .btn-outline{background:transparent;color:var(--muted);border:1.5px solid var(--border)}
+  .btn-outline:hover{color:var(--accent);border-color:var(--accent)}
+  .btn-outline:disabled{opacity:.4;cursor:not-allowed}
+  .speed-label{font-size:11px;font-weight:700;color:var(--muted);margin-left:4px}
+  .speed-btn{background:transparent;border:1.5px solid var(--border);color:var(--muted);font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;padding:5px 12px;border-radius:50px;cursor:pointer;transition:all .2s}
+  .speed-btn.active{background:var(--accent2);color:#0a0917;border-color:var(--accent2)}
+  .quiz-area{padding:28px;display:flex;flex-direction:column;align-items:flex-start;gap:12px}
+  .quiz-q{font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px}
+  .quiz-opt{background:var(--card2);border:1.5px solid var(--border);color:var(--text);font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;padding:10px 18px;border-radius:14px;cursor:pointer;transition:all .2s;text-align:left;width:100%}
+  .quiz-opt:hover{border-color:var(--accent);color:var(--accent)}
+  .quiz-opt.correct{background:rgba(52,211,153,.2);border-color:var(--accent3);color:var(--accent3)}
+  .quiz-opt.wrong{background:rgba(248,113,113,.15);border-color:var(--accent4);color:var(--accent4)}
+  .feedback{font-size:15px;font-weight:800;min-height:24px}
+  .next-lesson-btn{background:var(--accent2);color:#0a0917}
+  .next-lesson-btn:hover{filter:brightness(1.1)}
+  @keyframes drawLine{to{stroke-dashoffset:0}}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes squareGrow{from{transform:scale(0)}to{transform:scale(1)}}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+</style>
+</head>
+<body>
+<div class="outer">
+  <div class="top-bar">
+    <span class="lesson-label">Lesson 4</span>
+    <div class="lesson-nav-links">
+      <a href="lesson1.html" class="nav-link">L1</a>
+      <a href="lesson2.html" class="nav-link">L2</a>
+      <a href="lesson3.html" class="nav-link">L3</a>
+      <a href="lesson4.html" class="nav-link current">L4</a>
+    </div>
+  </div>
+  <h1>🔢 Finding the Hypotenuse: 3-4-5</h1>
+  <div class="subtitle">Work through a real example step by step - and learn ASL signs for maths!</div>
+  <div class="stage">
+    <div class="timeline"><div class="timeline-fill" id="timeline-fill"></div></div>
+    <div class="step-indicators" id="step-tabs"></div>
+    <div id="main-content">
+      <div class="content-area">
+        <div class="visual-panel" id="visual-panel"></div>
+        <div class="sign-panel" id="sign-panel"></div>
+      </div>
+    </div>
+    <div class="controls">
+      <button class="btn btn-outline" id="btn-prev" onclick="prevStep()">◀ Back</button>
+      <button class="btn btn-play" id="btn-play" onclick="togglePlay()">⏸ Pause</button>
+      <button class="btn btn-outline" onclick="nextStep()">Next ▶</button>
+      <span class="speed-label">Speed:</span>
+      <button class="speed-btn active" id="sp1" onclick="setSpeed(5000,'sp1')">Slow</button>
+      <button class="speed-btn" id="sp2" onclick="setSpeed(3000,'sp2')">Normal</button>
+      <button class="speed-btn" id="sp3" onclick="setSpeed(1800,'sp3')">Fast</button>
+    </div>
+  </div>
+</div>
+<script>
+const STEPS=[
+  {caption:'🎯 Let\\'s solve a <strong>real example</strong>! Our triangle has legs: <strong>a = 3</strong> and <strong>b = 4</strong>. We want to find <strong>c</strong> (the hypotenuse). Watch step by step!',sign:'NUMBER',handEmoji:'🤙',handNote:'Use number handshapes in ASL. For THREE: hold up your middle finger, ring finger, and pinky (or index, middle, ring). For FOUR: hold up four fingers. Practice signing 3 and 4 clearly.',svg:`<svg viewBox="0 0 280 215" width="100%" height="auto"><polygon points="55,190 175,190 55,70" fill="rgba(248,113,113,.08)" stroke="#f87171" stroke-width="3" stroke-dasharray="500" stroke-dashoffset="500" style="animation:drawLine 2s ease .3s forwards" stroke-linejoin="round"/><rect x="55" y="172" width="20" height="20" fill="none" stroke="#f59e0b" stroke-width="2.5" style="animation:fadeIn .5s ease 2s both"/><line x1="55" y1="190" x2="175" y2="190" stroke="#34d399" stroke-width="5" stroke-linecap="round" style="animation:fadeIn .5s ease 2.2s both"/><line x1="55" y1="70" x2="55" y2="190" stroke="#a78bfa" stroke-width="5" stroke-linecap="round" style="animation:fadeIn .5s ease 2.3s both"/><line x1="55" y1="70" x2="175" y2="190" stroke="#f87171" stroke-width="4" stroke-linecap="round" stroke-dasharray="8 5" style="animation:fadeIn .5s ease 2.4s both"/><text x="115" y="210" fill="#34d399" font-size="16" font-weight="900" text-anchor="middle" style="animation:fadeIn .5s ease 2.5s both">a = 3</text><text x="30" y="135" fill="#a78bfa" font-size="16" font-weight="900" text-anchor="middle" style="animation:fadeIn .5s ease 2.6s both">b = 4</text><text x="140" y="115" fill="#f87171" font-size="16" font-weight="900" text-anchor="middle" style="animation:fadeIn .5s ease 2.7s both">c = ?</text></svg>`},
+  {caption:'📝 <strong>Step 1:</strong> Write down the formula. <strong>a² + b² = c²</strong>. This is always our starting point - we never skip it!',sign:'WRITE',handEmoji:'✍️',handNote:'Pretend you are holding a pen between your index finger and thumb. Make small writing movements in the air as if writing on an imaginary piece of paper in front of you. This is the sign for WRITE.',svg:`<svg viewBox="0 0 280 175" width="100%" height="auto"><rect x="25" y="38" width="230" height="100" rx="18" fill="rgba(248,113,113,.1)" stroke="#f87171" stroke-width="2" style="animation:fadeIn .5s ease .3s both"/><text x="140" y="82" text-anchor="middle" fill="#f0eeff" font-size="24" font-weight="900" style="animation:fadeIn .5s ease .6s both">a² + b² = c²</text><text x="140" y="118" text-anchor="middle" fill="#9b96c4" font-size="13" style="animation:fadeIn .5s ease .9s both">Step 1: Start with the formula</text></svg>`},
+  {caption:'🔢 <strong>Step 2:</strong> Put the numbers in. Replace "a" with 3 and "b" with 4. So: <strong>3² + 4² = c²</strong>',sign:'PUT IN / REPLACE',handEmoji:'🤜',handNote:'Hold both hands cupped (like holding small balls). Move both hands forward together as if placing the numbers into the equation. This placing gesture shows substitution or PUT IN.',svg:`<svg viewBox="0 0 280 175" width="100%" height="auto"><rect x="15" y="28" width="250" height="120" rx="18" fill="rgba(248,113,113,.07)" stroke="#f87171" stroke-width="1.5"/><text x="140" y="68" text-anchor="middle" fill="#9b96c4" font-size="15" style="animation:fadeIn .4s ease .3s both">a² + b² = c²</text><text x="140" y="105" text-anchor="middle" fill="#f0eeff" font-size="22" font-weight="900" style="animation:fadeIn .5s ease .7s both">3² + 4² = c²</text><text x="140" y="133" text-anchor="middle" fill="#9b96c4" font-size="12" style="animation:fadeIn .4s ease 1s both">Step 2: Replace letters with numbers</text></svg>`},
+  {caption:'🧮 <strong>Step 3:</strong> Calculate the squares. <strong>3² = 9</strong> and <strong>4² = 16</strong>. So: 9 + 16 = c², which means <strong>25 = c²</strong>',sign:'CALCULATE',handEmoji:'🤲',handNote:'Form "C" handshapes with both hands (curved, like the letter C). Move both hands toward each other and brush them past each other once or twice. This brushing-past motion is the ASL sign for CALCULATE or MATH.',svg:`<svg viewBox="0 0 280 195" width="100%" height="auto"><text x="140" y="38" text-anchor="middle" fill="#9b96c4" font-size="13" style="animation:fadeIn .3s ease .2s both">3² + 4² = c²</text><rect x="14" y="52" width="115" height="55" rx="12" fill="rgba(52,211,153,.15)" stroke="#34d399" stroke-width="2" style="animation:squareGrow .5s ease .2s both;transform-origin:14px 52px"/><text x="72" y="78" fill="#34d399" font-size="14" font-weight="900" text-anchor="middle" style="animation:fadeIn .4s ease .6s both">3²=3×3=9</text><rect x="152" y="52" width="115" height="55" rx="12" fill="rgba(167,139,250,.15)" stroke="#a78bfa" stroke-width="2" style="animation:squareGrow .5s ease .4s both;transform-origin:152px 52px"/><text x="210" y="78" fill="#a78bfa" font-size="14" font-weight="900" text-anchor="middle" style="animation:fadeIn .4s ease .8s both">4²=4×4=16</text><text x="140" y="142" text-anchor="middle" fill="#f0eeff" font-size="19" font-weight="900" style="animation:fadeIn .5s ease 1s both">9 + 16 = c²</text><text x="140" y="170" text-anchor="middle" fill="#f59e0b" font-size="21" font-weight="900" style="animation:fadeIn .5s ease 1.3s both">25 = c²</text></svg>`},
+  {caption:'🎉 <strong>Step 4:</strong> Find c by doing the square root. <strong>√25 = 5</strong>. So <strong>c = 5!</strong> The hypotenuse is 5! The famous 3-4-5 triangle!',sign:'ANSWER',handEmoji:'☝️',handNote:'Point your index finger toward your lips (touching them). Then move the finger straight out forward, away from your face. This forward motion from the lips is the ASL sign for ANSWER or RESPONSE.',svg:`<svg viewBox="0 0 280 195" width="100%" height="auto"><text x="140" y="33" text-anchor="middle" fill="#9b96c4" font-size="13">25 = c²  →  √25 = c</text><rect x="75" y="48" width="130" height="68" rx="18" fill="rgba(248,113,113,.2)" stroke="#f87171" stroke-width="3" style="animation:pulse 2s ease-in-out infinite"/><text x="140" y="92" text-anchor="middle" fill="#f87171" font-size="34" font-weight="900">c = 5 🎉</text><text x="140" y="142" text-anchor="middle" fill="#f0eeff" font-size="13">The 3-4-5 triangle is famous!</text><polygon points="165,158 225,158 165,215" fill="none" stroke="#f87171" stroke-width="2.5" style="animation:fadeIn .5s ease .5s both"/><rect x="165" y="197" width="14" height="14" fill="none" stroke="#f59e0b" stroke-width="2"/><text x="200" y="213" fill="#34d399" font-size="12" font-weight="700">3</text><text x="152" y="192" fill="#a78bfa" font-size="12" font-weight="700">4</text><text x="205" y="184" fill="#f87171" font-size="12" font-weight="700">5</text></svg>`}
+];
+const QUIZ={q:'In a triangle with legs a=3 and b=4, what is c?',opts:['c = 7','c = 6','c = 5','c = 3.5'],ans:2};
+let currentStep=0,isPlaying=true,stepDuration=5000,elapsed=0,elapsedInterval=null,quizAnswered=false,showingQuiz=false;
+function renderTabs(){document.getElementById('step-tabs').innerHTML=STEPS.map((s,i)=>`<div class="step-tab${i===currentStep?' active':i<currentStep?' done':''}" onclick="jumpStep(${i})">${i<currentStep?'✓':'Step '+(i+1)}</div>`).join('');}
+function renderStep(){if(showingQuiz)return;const s=STEPS[currentStep];document.getElementById('visual-panel').innerHTML=`<div class="step-content">${s.svg}</div>`;document.getElementById('sign-panel').innerHTML=`<div class="step-content"><div class="caption">${s.caption}</div><div class="sign-block"><div class="sign-title">🤟 Sign Language — ${s.sign}</div><div class="sign-illustration"><div class="hand-emoji">${s.handEmoji}</div><div class="sign-text">${s.sign}</div></div><div class="sign-instruction">${s.handNote}</div></div></div>`;renderTabs();document.getElementById('btn-prev').disabled=currentStep===0;}
+function startTimer(){clearInterval(elapsedInterval);elapsed=0;document.getElementById('timeline-fill').style.width='0%';elapsedInterval=setInterval(()=>{elapsed+=80;const pct=Math.min((elapsed/stepDuration)*100,100);document.getElementById('timeline-fill').style.width=pct+'%';if(elapsed>=stepDuration){clearInterval(elapsedInterval);if(isPlaying)autoAdvance();}},80);}
+function autoAdvance(){if(currentStep<STEPS.length-1){currentStep++;renderStep();startTimer();}else showQuiz();}
+function togglePlay(){isPlaying=!isPlaying;const btn=document.getElementById('btn-play');if(isPlaying){btn.textContent='⏸ Pause';startTimer();}else{btn.textContent='▶ Play';clearInterval(elapsedInterval);}}
+function nextStep(){clearInterval(elapsedInterval);if(currentStep<STEPS.length-1){currentStep++;renderStep();if(isPlaying)startTimer();}else showQuiz();}
+function prevStep(){if(showingQuiz){showingQuiz=false;document.getElementById('main-content').innerHTML=`<div class="content-area"><div class="visual-panel" id="visual-panel"></div><div class="sign-panel" id="sign-panel"></div></div>`;document.getElementById('step-tabs').style.display='flex';document.querySelector('.controls').style.display='flex';renderStep();if(isPlaying)startTimer();return;}clearInterval(elapsedInterval);if(currentStep>0){currentStep--;renderStep();if(isPlaying)startTimer();}}
+function jumpStep(i){if(showingQuiz)return;clearInterval(elapsedInterval);currentStep=i;renderStep();if(isPlaying)startTimer();}
+function setSpeed(ms,id){stepDuration=ms;document.querySelectorAll('.speed-btn').forEach(b=>b.classList.remove('active'));document.getElementById(id).classList.add('active');if(isPlaying){clearInterval(elapsedInterval);startTimer();}}
+function showQuiz(){showingQuiz=true;clearInterval(elapsedInterval);document.getElementById('timeline-fill').style.width='100%';document.getElementById('step-tabs').style.display='none';document.querySelector('.controls').style.display='none';document.getElementById('main-content').innerHTML=`<div class="quiz-area"><div class="sign-block" style="margin-bottom:18px;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;flex-direction:row"><span style="font-size:22px">🤟</span><span style="font-size:12px;font-weight:800;color:var(--lesson-color)">Sign: QUESTION — W-handshape, wiggle fingers</span></div><div class="quiz-q">📝 ${QUIZ.q}</div>${QUIZ.opts.map((o,i)=>`<button class="quiz-opt" id="opt${i}" onclick="checkAns(${i})">${String.fromCharCode(65+i)}) ${o}</button>`).join('')}<div class="feedback" id="feedback"></div><div style="margin-top:10px;text-align:center"><button class="btn btn-outline" onclick="restartLesson()" style="margin-right:8px">🔁 Restart</button><a href="lesson5.html"><button class="btn next-lesson-btn" id="next-btn" style="display:none">Next Lesson ▶</button></a></div></div>`;}
+function checkAns(i){if(quizAnswered)return;quizAnswered=true;document.querySelectorAll('.quiz-opt').forEach((b,j)=>{b.disabled=true;if(j===QUIZ.ans)b.classList.add('correct');else if(j===i&&i!==QUIZ.ans)b.classList.add('wrong');});document.getElementById('feedback').innerHTML=i===QUIZ.ans?'<span style="color:var(--accent3)">✅ Correct! 🎉</span>':'<span style="color:var(--accent4)">❌ Not quite — see the green answer.</span>';document.getElementById('next-btn').style.display='inline-flex';}
+function restartLesson(){showingQuiz=false;quizAnswered=false;currentStep=0;document.getElementById('main-content').innerHTML=`<div class="content-area"><div class="visual-panel" id="visual-panel"></div><div class="sign-panel" id="sign-panel"></div></div>`;document.getElementById('step-tabs').style.display='flex';document.querySelector('.controls').style.display='flex';isPlaying=true;document.getElementById('btn-play').textContent='⏸ Pause';renderStep();startTimer();}
+renderStep();startTimer();
+</script>
+</body>
+</html>

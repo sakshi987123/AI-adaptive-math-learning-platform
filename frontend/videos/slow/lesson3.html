@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 3 - Proof Using Squares</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#0a0917;--card:#13112a;--card2:#1c1938;--accent:#a78bfa;--accent2:#f59e0b;--accent3:#34d399;--accent4:#f87171;--text:#f0eeff;--muted:#9b96c4;--border:#2e2a54;--lesson-color:#34d399;}
+  body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px}
+  .outer{width:100%;max-width:780px}
+  .top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .lesson-label{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--lesson-color);background:rgba(52,211,153,.12);border:1.5px solid var(--lesson-color);border-radius:50px;padding:4px 14px}
+  .lesson-nav-links{display:flex;gap:8px}
+  .nav-link{font-size:12px;font-weight:700;color:var(--muted);text-decoration:none;padding:4px 10px;border-radius:50px;border:1.5px solid var(--border);transition:all .2s}
+  .nav-link:hover{color:var(--accent);border-color:var(--accent)}
+  .nav-link.current{color:var(--lesson-color);border-color:var(--lesson-color)}
+  h1{font-size:clamp(20px,4vw,28px);font-weight:900;line-height:1.2;margin-bottom:4px}
+  .subtitle{color:var(--muted);font-size:14px;margin-bottom:16px}
+  .stage{background:var(--card);border-radius:24px;border:1.5px solid var(--border);overflow:hidden}
+  .timeline{height:4px;background:var(--border)}
+  .timeline-fill{height:100%;background:linear-gradient(90deg,var(--lesson-color),var(--accent2));transition:width .1s linear;width:0%}
+  .step-indicators{display:flex;border-bottom:1.5px solid var(--border)}
+  .step-tab{flex:1;padding:8px 4px;text-align:center;font-size:11px;font-weight:800;color:var(--muted);border-right:1px solid var(--border);cursor:pointer;transition:all .3s}
+  .step-tab:last-child{border-right:none}
+  .step-tab.active{color:var(--lesson-color);background:rgba(52,211,153,.1)}
+  .step-tab.done{color:var(--accent3)}
+  .content-area{display:grid;grid-template-columns:1fr 1fr;min-height:380px}
+  @media(max-width:600px){.content-area{grid-template-columns:1fr}}
+  .visual-panel{padding:28px 20px;display:flex;align-items:center;justify-content:center;border-right:1.5px solid var(--border);background:var(--card2)}
+  @media(max-width:600px){.visual-panel{border-right:none;border-bottom:1.5px solid var(--border)}}
+  .sign-panel{padding:20px;display:flex;flex-direction:column;justify-content:center;gap:14px}
+  .caption{font-size:15px;line-height:1.8;color:var(--text)}
+  .sign-block{background:rgba(52,211,153,.07);border:1.5px solid rgba(52,211,153,.3);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px}
+  .sign-title{font-size:11px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--lesson-color)}
+  .sign-illustration{display:flex;align-items:center;gap:10px}
+  .hand-emoji{font-size:32px;filter:drop-shadow(0 2px 8px rgba(52,211,153,.4))}
+  .sign-text{font-size:13px;font-weight:700;color:var(--text);line-height:1.5}
+  .sign-instruction{font-size:12px;color:var(--muted);line-height:1.5;border-top:1px solid var(--border);padding-top:8px}
+  .controls{padding:14px 20px;border-top:1.5px solid var(--border);display:flex;align-items:center;gap:12px;background:rgba(0,0,0,.2)}
+  .btn{padding:9px 20px;border-radius:50px;border:none;font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;cursor:pointer;transition:all .25s;display:inline-flex;align-items:center;gap:6px}
+  .btn-play{background:var(--lesson-color);color:#0a0917;min-width:88px}
+  .btn-play:hover{filter:brightness(1.1)}
+  .btn-outline{background:transparent;color:var(--muted);border:1.5px solid var(--border)}
+  .btn-outline:hover{color:var(--accent);border-color:var(--accent)}
+  .btn-outline:disabled{opacity:.4;cursor:not-allowed}
+  .speed-label{font-size:11px;font-weight:700;color:var(--muted);margin-left:4px}
+  .speed-btn{background:transparent;border:1.5px solid var(--border);color:var(--muted);font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;padding:5px 12px;border-radius:50px;cursor:pointer;transition:all .2s}
+  .speed-btn.active{background:var(--accent2);color:#0a0917;border-color:var(--accent2)}
+  .quiz-area{padding:28px;display:flex;flex-direction:column;align-items:flex-start;gap:12px}
+  .quiz-q{font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px}
+  .quiz-opt{background:var(--card2);border:1.5px solid var(--border);color:var(--text);font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;padding:10px 18px;border-radius:14px;cursor:pointer;transition:all .2s;text-align:left;width:100%}
+  .quiz-opt:hover{border-color:var(--accent);color:var(--accent)}
+  .quiz-opt.correct{background:rgba(52,211,153,.2);border-color:var(--accent3);color:var(--accent3)}
+  .quiz-opt.wrong{background:rgba(248,113,113,.15);border-color:var(--accent4);color:var(--accent4)}
+  .feedback{font-size:15px;font-weight:800;min-height:24px}
+  .next-lesson-btn{background:var(--accent2);color:#0a0917}
+  .next-lesson-btn:hover{filter:brightness(1.1)}
+  @keyframes drawLine{to{stroke-dashoffset:0}}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes squareGrow{from{transform:scale(0)}to{transform:scale(1)}}
+</style>
+</head>
+<body>
+<div class="outer">
+  <div class="top-bar">
+    <span class="lesson-label">Lesson 3</span>
+    <div class="lesson-nav-links">
+      <a href="lesson1.html" class="nav-link">L1</a>
+      <a href="lesson2.html" class="nav-link">L2</a>
+      <a href="lesson3.html" class="nav-link current">L3</a>
+      <a href="lesson4.html" class="nav-link">L4</a>
+    </div>
+  </div>
+  <h1>🟩🟪🔴 Visual Proof: Squares on Sides</h1>
+  <div class="subtitle">See WHY a² + b² = c² using coloured squares - and learn ASL signs along the way!</div>
+  <div class="stage">
+    <div class="timeline"><div class="timeline-fill" id="timeline-fill"></div></div>
+    <div class="step-indicators" id="step-tabs"></div>
+    <div id="main-content">
+      <div class="content-area">
+        <div class="visual-panel" id="visual-panel"></div>
+        <div class="sign-panel" id="sign-panel"></div>
+      </div>
+    </div>
+    <div class="controls">
+      <button class="btn btn-outline" id="btn-prev" onclick="prevStep()">◀ Back</button>
+      <button class="btn btn-play" id="btn-play" onclick="togglePlay()">⏸ Pause</button>
+      <button class="btn btn-outline" onclick="nextStep()">Next ▶</button>
+      <span class="speed-label">Speed:</span>
+      <button class="speed-btn active" id="sp1" onclick="setSpeed(5000,'sp1')">Slow</button>
+      <button class="speed-btn" id="sp2" onclick="setSpeed(3000,'sp2')">Normal</button>
+      <button class="speed-btn" id="sp3" onclick="setSpeed(1800,'sp3')">Fast</button>
+    </div>
+  </div>
+</div>
+<script>
+const STEPS=[
+  {caption:'👀 The best way to <strong>understand</strong> the theorem is to <strong>SEE it</strong>. We will draw coloured squares on every side of the triangle and watch the proof unfold!',sign:'SEE',handEmoji:'✌️',handNote:'Make a "V" shape (peace sign) with your dominant hand. Start with the V pointing at your own eyes, then swing it forward - like sending your vision out into the world. This is the sign for SEE or LOOK.',svg:`<svg viewBox="0 0 280 215" width="100%" height="auto"><polygon points="95,170 215,170 95,70" fill="rgba(52,211,153,.1)" stroke="#34d399" stroke-width="3" stroke-dasharray="500" stroke-dashoffset="500" style="animation:drawLine 2s ease .3s forwards"/><rect x="95" y="152" width="20" height="20" fill="none" stroke="#f59e0b" stroke-width="2.5" style="animation:fadeIn .5s ease 2s both"/><text x="155" y="207" fill="#9b96c4" font-size="13" font-weight="700" text-anchor="middle" style="animation:fadeIn .5s ease 2.2s both">Start with a right triangle</text></svg>`},
+  {caption:'🟩 First: draw a <strong>GREEN square</strong> on side "a" (the bottom leg). The area inside equals <strong>a²</strong>. Count the little squares inside - that is the area!',sign:'GREEN',handEmoji:'🤘',handNote:'Make a "G" handshape - extend your index finger and thumb (like pointing sideways). Twist your wrist a couple of times. In ASL, this hand movement while forming the "G" represents the colour GREEN.',svg:`<svg viewBox="0 0 280 235" width="100%" height="auto"><polygon points="95,150 215,150 95,52" fill="rgba(52,211,153,.07)" stroke="#34d399" stroke-width="2"/><rect x="95" y="132" width="16" height="16" fill="none" stroke="#f59e0b" stroke-width="2"/><rect x="95" y="150" width="120" height="120" fill="rgba(52,211,153,.25)" stroke="#34d399" stroke-width="2.5" style="animation:squareGrow .7s ease .4s both;transform-origin:95px 150px"/><text x="155" y="218" fill="#34d399" font-size="15" font-weight="900" text-anchor="middle" style="animation:fadeIn .5s ease 1s both">a² square</text></svg>`},
+  {caption:'🟪 Next: draw a <strong>PURPLE square</strong> on side "b" (the vertical leg). Its area equals <strong>b²</strong>. Add this to the green square area.',sign:'PURPLE',handEmoji:'🤙',handNote:'Make a "P" handshape - middle finger pointing down, index finger forward. Shake your hand gently side to side. This wrist-shake while forming the "P" shape is the ASL sign for PURPLE.',svg:`<svg viewBox="0 0 280 235" width="100%" height="auto"><polygon points="125,170 245,170 125,70" fill="rgba(52,211,153,.06)" stroke="#34d399" stroke-width="2"/><rect x="125" y="152" width="16" height="16" fill="none" stroke="#f59e0b" stroke-width="2"/><rect x="125" y="170" width="100" height="100" fill="rgba(52,211,153,.18)" stroke="#34d399" stroke-width="1.5"/><text x="175" y="228" fill="#34d399" font-size="12" font-weight="700" text-anchor="middle">a²</text><rect x="22" y="70" width="103" height="100" fill="rgba(167,139,250,.25)" stroke="#a78bfa" stroke-width="2.5" style="animation:squareGrow .7s ease .4s both;transform-origin:125px 70px"/><text x="74" y="124" fill="#a78bfa" font-size="15" font-weight="900" text-anchor="middle" style="animation:fadeIn .5s ease 1s both">b² square</text></svg>`},
+  {caption:'🔴 Now draw a <strong>RED square on the HYPOTENUSE</strong>. Something <strong>AMAZING</strong> happens - its area equals exactly a² + b²! Look carefully!',sign:'AMAZING',handEmoji:'🙌',handNote:'Hold both open hands in front of your face (fingers spread, palms facing you). Then push both hands away from your face while wiggling your fingers. This open-hands-push is ASL for AMAZING or WOW.',svg:`<svg viewBox="0 0 310 248" width="100%" height="auto"><polygon points="127,183 247,183 127,85" fill="rgba(52,211,153,.06)" stroke="#34d399" stroke-width="2"/><rect x="127" y="165" width="14" height="14" fill="none" stroke="#f59e0b" stroke-width="2"/><rect x="127" y="183" width="100" height="100" fill="rgba(52,211,153,.18)" stroke="#34d399" stroke-width="1.5"/><text x="177" y="240" fill="#34d399" font-size="11" font-weight="700" text-anchor="middle">a²</text><rect x="24" y="83" width="103" height="100" fill="rgba(167,139,250,.18)" stroke="#a78bfa" stroke-width="1.5"/><text x="76" y="138" fill="#a78bfa" font-size="11" font-weight="700" text-anchor="middle">b²</text><rect x="162" y="44" width="133" height="133" fill="rgba(248,113,113,.22)" stroke="#f87171" stroke-width="2.5" style="animation:squareGrow .7s ease .4s both;transform-origin:162px 44px" transform="rotate(38,228,110)"/><text x="240" y="98" fill="#f87171" font-size="14" font-weight="900" text-anchor="middle" transform="rotate(38,240,98)" style="animation:fadeIn .5s ease 1s both">c² square</text></svg>`},
+  {caption:'✅ The area of the <strong>red square (c²)</strong> is <strong>EXACTLY equal</strong> to the green + purple areas (a² + b²). This is the visual PROOF that a² + b² = c² always works!',sign:'PROOF / TRUE',handEmoji:'☝️',handNote:'Point your index finger toward your chin (touching lightly). Then move the finger straight forward firmly. This forward-pointing motion from the mouth/chin area is ASL for PROOF, TRUE, or REAL.',svg:`<svg viewBox="0 0 295 178" width="100%" height="auto"><rect x="15" y="18" width="60" height="60" fill="rgba(52,211,153,.3)" stroke="#34d399" stroke-width="2.5"/><text x="45" y="56" fill="#34d399" font-size="18" font-weight="900" text-anchor="middle">a²</text><rect x="88" y="18" width="80" height="80" fill="rgba(167,139,250,.3)" stroke="#a78bfa" stroke-width="2.5" style="animation:squareGrow .5s ease .1s both;transform-origin:88px 18px"/><text x="128" y="66" fill="#a78bfa" font-size="18" font-weight="900" text-anchor="middle">b²</text><text x="180" y="72" fill="#f0eeff" font-size="24" font-weight="900">=</text><rect x="196" y="8" width="95" height="95" fill="rgba(248,113,113,.3)" stroke="#f87171" stroke-width="2.5" style="animation:squareGrow .5s ease .3s both;transform-origin:196px 8px"/><text x="243" y="63" fill="#f87171" font-size="18" font-weight="900" text-anchor="middle">c²</text><text x="148" y="143" fill="#f59e0b" font-size="14" font-weight="800" text-anchor="middle">✅ Green + Purple = Red. Every time!</text><text x="148" y="163" fill="#9b96c4" font-size="13" text-anchor="middle">a² + b² = c² ✓ PROVED!</text></svg>`}
+];
+const QUIZ={q:'In the visual proof, what does the square on side "c" equal?',opts:['a² × b²','a + b','a² + b²','c + 2'],ans:2};
+let currentStep=0,isPlaying=true,stepDuration=5000,elapsed=0,elapsedInterval=null,quizAnswered=false,showingQuiz=false;
+function renderTabs(){document.getElementById('step-tabs').innerHTML=STEPS.map((s,i)=>`<div class="step-tab${i===currentStep?' active':i<currentStep?' done':''}" onclick="jumpStep(${i})">${i<currentStep?'✓':'Step '+(i+1)}</div>`).join('');}
+function renderStep(){if(showingQuiz)return;const s=STEPS[currentStep];document.getElementById('visual-panel').innerHTML=`<div class="step-content">${s.svg}</div>`;document.getElementById('sign-panel').innerHTML=`<div class="step-content"><div class="caption">${s.caption}</div><div class="sign-block"><div class="sign-title">🤟 Sign Language — ${s.sign}</div><div class="sign-illustration"><div class="hand-emoji">${s.handEmoji}</div><div class="sign-text">${s.sign}</div></div><div class="sign-instruction">${s.handNote}</div></div></div>`;renderTabs();document.getElementById('btn-prev').disabled=currentStep===0;}
+function startTimer(){clearInterval(elapsedInterval);elapsed=0;document.getElementById('timeline-fill').style.width='0%';elapsedInterval=setInterval(()=>{elapsed+=80;const pct=Math.min((elapsed/stepDuration)*100,100);document.getElementById('timeline-fill').style.width=pct+'%';if(elapsed>=stepDuration){clearInterval(elapsedInterval);if(isPlaying)autoAdvance();}},80);}
+function autoAdvance(){if(currentStep<STEPS.length-1){currentStep++;renderStep();startTimer();}else{showQuiz();}}
+function togglePlay(){isPlaying=!isPlaying;const btn=document.getElementById('btn-play');if(isPlaying){btn.textContent='⏸ Pause';startTimer();}else{btn.textContent='▶ Play';clearInterval(elapsedInterval);}}
+function nextStep(){clearInterval(elapsedInterval);if(currentStep<STEPS.length-1){currentStep++;renderStep();if(isPlaying)startTimer();}else showQuiz();}
+function prevStep(){if(showingQuiz){showingQuiz=false;document.getElementById('main-content').innerHTML=`<div class="content-area"><div class="visual-panel" id="visual-panel"></div><div class="sign-panel" id="sign-panel"></div></div>`;document.getElementById('step-tabs').style.display='flex';document.querySelector('.controls').style.display='flex';renderStep();if(isPlaying)startTimer();return;}clearInterval(elapsedInterval);if(currentStep>0){currentStep--;renderStep();if(isPlaying)startTimer();}}
+function jumpStep(i){if(showingQuiz)return;clearInterval(elapsedInterval);currentStep=i;renderStep();if(isPlaying)startTimer();}
+function setSpeed(ms,id){stepDuration=ms;document.querySelectorAll('.speed-btn').forEach(b=>b.classList.remove('active'));document.getElementById(id).classList.add('active');if(isPlaying){clearInterval(elapsedInterval);startTimer();}}
+function showQuiz(){showingQuiz=true;clearInterval(elapsedInterval);document.getElementById('timeline-fill').style.width='100%';document.getElementById('step-tabs').style.display='none';document.querySelector('.controls').style.display='none';document.getElementById('main-content').innerHTML=`<div class="quiz-area"><div class="sign-block" style="margin-bottom:18px;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;flex-direction:row"><span style="font-size:22px">🤟</span><span style="font-size:12px;font-weight:800;color:var(--lesson-color)">Sign: QUESTION — W-handshape, wiggle fingers</span></div><div class="quiz-q">📝 ${QUIZ.q}</div>${QUIZ.opts.map((o,i)=>`<button class="quiz-opt" id="opt${i}" onclick="checkAns(${i})">${String.fromCharCode(65+i)}) ${o}</button>`).join('')}<div class="feedback" id="feedback"></div><div style="margin-top:10px;text-align:center"><button class="btn btn-outline" onclick="restartLesson()" style="margin-right:8px">🔁 Restart</button><a href="lesson4.html"><button class="btn next-lesson-btn" id="next-btn" style="display:none">Next Lesson ▶</button></a></div></div>`;}
+function checkAns(i){if(quizAnswered)return;quizAnswered=true;document.querySelectorAll('.quiz-opt').forEach((b,j)=>{b.disabled=true;if(j===QUIZ.ans)b.classList.add('correct');else if(j===i&&i!==QUIZ.ans)b.classList.add('wrong');});document.getElementById('feedback').innerHTML=i===QUIZ.ans?'<span style="color:var(--accent3)">✅ Correct! 🎉</span>':'<span style="color:var(--accent4)">❌ Not quite — see the green answer.</span>';document.getElementById('next-btn').style.display='inline-flex';}
+function restartLesson(){showingQuiz=false;quizAnswered=false;currentStep=0;document.getElementById('main-content').innerHTML=`<div class="content-area"><div class="visual-panel" id="visual-panel"></div><div class="sign-panel" id="sign-panel"></div></div>`;document.getElementById('step-tabs').style.display='flex';document.querySelector('.controls').style.display='flex';isPlaying=true;document.getElementById('btn-play').textContent='⏸ Pause';renderStep();startTimer();}
+renderStep();startTimer();
+</script>
+</body>
+</html>

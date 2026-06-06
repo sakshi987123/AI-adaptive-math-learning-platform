@@ -1,0 +1,74 @@
+<svg width="320" height="180" viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg-enhanced4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6ee7b7;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2563eb;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="calc-enhanced4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f59e0b;stop-opacity:1" />
+    </linearGradient>
+    <filter id="deep-shadow">
+      <feDropShadow dx="0" dy="15" stdDeviation="20" flood-opacity="0.8"/>
+    </filter>
+    <filter id="bright-glow">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <radialGradient id="spotlight">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0" />
+    </radialGradient>
+  </defs>
+  
+  <!-- Dynamic background -->
+  <rect width="320" height="180" fill="url(#bg-enhanced4)"/>
+  
+  <!-- Spotlight effect -->
+  <ellipse cx="160" cy="90" rx="100" ry="50" fill="url(#spotlight)" opacity="0.6"/>
+  
+  <!-- Wave pattern background -->
+  <pattern id="wave-enhanced" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
+    <path d="M 0,30 Q 30,0 60,30 T 60,60 Q 30,90 30,60 T 0,60" fill="none" stroke="rgba(107,114,128,0.1)" stroke-width="1"/>
+  </pattern>
+  <rect width="320" height="180" fill="url(#wave-enhanced)" opacity="0.3"/>
+  
+  <!-- Enhanced calculator and triangle -->
+  <g transform="translate(160, 85)" filter="url(#deep-shadow)">
+    <!-- Triangle with depth -->
+    <polygon points="-45,-25 -55,30 55,30" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+    
+    <!-- Calculator with 3D effect -->
+    <g transform="translate(-10, -5)">
+      <!-- Back -->
+      <rect x="0" y="0" width="40" height="30" fill="rgba(107,114,128,0.3)" rx="4"/>
+      <!-- Front -->
+      <rect x="0" y="0" width="40" height="30" fill="url(#calc-enhanced4)" rx="4" filter="url(#bright-glow)"/>
+      <!-- Display -->
+      <text x="20" y="20" text-anchor="middle" fill="#6ee7b7" font-family="Arial, sans-serif" font-size="16" font-weight="bold">√</text>
+    </g>
+    
+    <!-- Enhanced labels -->
+    <text x="-45" y="-30" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="16" font-weight="bold" filter="url(#bright-glow)">a</text>
+    <text x="-45" y="50" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="16" font-weight="bold" filter="url(#bright-glow)">b</text>
+    <text x="55" y="30" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="20" font-weight="bold" filter="url(#bright-glow)">c</text>
+  </g>
+  
+  <!-- Floating mathematical elements -->
+  <g opacity="0.9">
+    <text x="60" y="40" fill="#fbbf24" font-family="Arial, sans-serif" font-size="18" font-weight="bold" filter="url(#bright-glow)">√</text>
+    <text x="270" y="70" fill="#f59e0b" font-family="Arial, sans-serif" font-size="16" font-weight="bold" filter="url(#bright-glow)">π</text>
+    <text x="80" y="140" fill="#fbbf24" font-family="Arial, sans-serif" font-size="14" font-weight="bold" filter="url(#bright-glow)">θ</text>
+    <text x="240" y="110" fill="#f59e0b" font-family="Arial, sans-serif" font-size="16" font-weight="bold" filter="url(#bright-glow)">∑</text>
+  </g>
+  
+  <!-- Title section with dramatic depth -->
+  <rect x="10" y="140" width="300" height="35" fill="rgba(107,114,128,0.9)" rx="8" filter="url(#deep-shadow)"/>
+  <rect x="15" y="145" width="290" height="25" fill="rgba(59,130,246,0.8)" rx="6"/>
+  <text x="160" y="158" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="26" font-weight="bold" filter="url(#bright-glow)">Lesson 4</text>
+  <text x="160" y="176" text-anchor="middle" fill="#fbbf24" font-family="Arial, sans-serif" font-size="12" font-weight="600">Finding Hypotenuse</text>
+</svg>

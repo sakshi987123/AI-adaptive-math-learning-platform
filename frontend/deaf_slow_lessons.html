@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SimplexMath — Visual Lessons (Slow Learner)</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    body { background: #081b2e; color: #f8fafc; font-family: 'Inter', sans-serif; }
+    .page { max-width: 1100px; margin: 0 auto; padding: 5rem 2rem 3rem; }
+
+    .page-header { margin-bottom: 2rem; }
+    .page-header h1 { font-family: 'Outfit', sans-serif; font-size: clamp(2rem, 3.5vw, 2.8rem); font-weight: 800; margin-bottom: 0.5rem; background: linear-gradient(135deg, #c084fc, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; color: transparent; }
+    .page-header p { color: #94a3b8; font-size: 1rem; font-weight: 500; line-height: 1.6; }
+    .level-tag { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1rem; border-radius: 100px; background: linear-gradient(135deg, rgba(168,85,247,0.2), rgba(59,130,246,0.3)); border: 1px solid rgba(168,85,247,0.4); color: #c084fc; font-size: 0.8rem; font-weight: 700; margin-bottom: 0.8rem; box-shadow: 0 4px 20px rgba(168,85,247,0.3); transition: all 0.3s ease; }
+    .level-tag:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(168,85,247,0.5); }
+
+    /* Modal */
+    .video-modal { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); align-items: center; justify-content: center; }
+    .video-modal.open { display: flex; }
+    .modal-inner { width: 90%; max-width: 860px; background: #0a0f1e; border: 1px solid rgba(168,85,247,0.2); border-radius: 24px; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.6); }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .modal-title { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1rem; }
+    .modal-close { width: 32px; height: 32px; border-radius: 50%; border: none; cursor: pointer; background: rgba(255,255,255,0.08); color: #94a3b8; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .modal-close:hover { background: rgba(239,68,68,0.2); color: #f87171; }
+    .video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; }
+    .video-wrapper video,
+    .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; border: 0; }
+    .video-not-ready { display: none; position: absolute; inset: 0; background: #0a0f1e; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; text-align: center; padding: 2rem; }
+    .video-not-ready .icon { font-size: 3rem; }
+    .video-not-ready h3 { font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 700; }
+    .video-not-ready p { color: #64748b; font-size: 0.88rem; }
+    code { background: rgba(255,255,255,0.08); padding: 0.2rem 0.5rem; border-radius: 6px; font-size: 0.85rem; }
+
+    /* Video grid */
+    .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.2rem; }
+    .video-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(168,85,247,0.2); border-radius: 24px; overflow: hidden; cursor: pointer; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; }
+    .video-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(168,85,247,0.1), rgba(59,130,246,0.05)); border-radius: 24px; opacity: 0; transition: opacity 0.3s; }
+    .video-card:hover::before { opacity: 1; }
+    .video-card:hover { border-color: rgba(168,85,247,0.6); transform: translateY(-8px) scale(1.02); box-shadow: 0 20px 60px rgba(168,85,247,0.25); }
+    .video-thumb { position: relative; padding-bottom: 56.25%; overflow: hidden; }
+    .video-thumb-placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(168,85,247,0.15), rgba(59,130,246,0.1)); gap: 0.5rem; }
+    .thumb-icon { font-size: 2.5rem; }
+    .thumb-label { font-size: 0.75rem; color: #64748b; }
+    .video-thumb-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; }
+    .video-card:hover .video-thumb-img { transform: scale(1.05); }
+    .coming-soon-badge { position: absolute; top: 0.6rem; right: 0.6rem; padding: 0.2rem 0.6rem; border-radius: 100px; background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.3); color: #fbbf24; font-size: 0.68rem; font-weight: 600; }
+    .play-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.3); opacity: 0; transition: opacity 0.2s; }
+    .video-card:hover .play-overlay { opacity: 1; }
+    .play-btn-circle { width: 56px; height: 56px; border-radius: 50%; background: rgba(168,85,247,0.9); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; box-shadow: 0 0 30px rgba(168,85,247,0.5); }
+    .video-info { padding: 1.2rem 1.4rem; background: rgba(255,255,255,0.02); border-radius: 0 0 16px 16px; }
+    .video-num { font-size: 0.75rem; font-weight: 700; color: #c084fc; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.4rem; background: rgba(192,132,252,0.1); padding: 0.2rem 0.6rem; border-radius: 20px; display: inline-block; }
+    .video-title { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.1rem; margin-bottom: 0.4rem; color: #f8fafc; line-height: 1.3; }
+    .video-desc { font-size: 0.85rem; color: #94a3b8; line-height: 1.6; margin-top: 0.2rem; }
+
+    /* Next step */
+    .next-section { margin-top: 3rem; padding: 2rem 2.2rem; background: linear-gradient(135deg, rgba(168,85,247,0.1), rgba(59,130,246,0.15)); border: 1px solid rgba(168,85,247,0.3); border-radius: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; position: relative; overflow: hidden; }
+    .next-section::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(168,85,247,0.05), rgba(59,130,246,0.08)); border-radius: 24px; opacity: 0.8; }
+    .next-section h3 { font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 700; margin-bottom: 0.4rem; color: #f8fafc; position: relative; z-index: 1; }
+    .next-section p { color: #cbd5e1; font-size: 0.95rem; font-weight: 500; line-height: 1.5; position: relative; z-index: 1; }
+    .btn-next { padding: 1rem 2.5rem; border-radius: 100px; border: none; cursor: pointer; background: linear-gradient(135deg, #60a5fa, #3b82f6); color: #fff; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.1rem; box-shadow: 0 6px 30px rgba(96,165,250,0.4); transition: all 0.3s ease; white-space: nowrap; position: relative; z-index: 1; }
+    .btn-next::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.05)); border-radius: 100px; opacity: 0; transition: opacity 0.3s; }
+    .btn-next:hover::before { opacity: 1; }
+    .btn-next:hover { transform: translateY(-4px) scale(1.05); box-shadow: 0 12px 40px rgba(96,165,250,0.6); }
+  </style>
+</head>
+<body>
+<div class="orb orb-purple" style="opacity:0.2;"></div>
+<div class="orb orb-cyan" style="opacity:0.1;"></div>
+
+<nav>
+  <a href="index.html" class="nav-logo">SimplexMath</a>
+  <div class="nav-badge text-purple border-purple">🎬 Visual Lessons</div>
+  <a href="Quiz deaf.html" class="btn btn-outline" style="padding:0.5rem 1.2rem;font-size:0.9rem;">← Back to Quiz</a>
+</nav>
+
+<!-- VIDEO MODAL -->
+<div class="video-modal" id="videoModal" onclick="closeModal(event)">
+  <div class="modal-inner" id="modalInner">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Video Lesson</div>
+      <button class="modal-close" onclick="closeVideoModal()">✕</button>
+    </div>
+    <div class="video-wrapper">
+      <video id="modalVideo" controls autoplay>
+        <source id="modalVideoSrc" src="" type="video/mp4"/>
+        Your browser does not support the video tag.
+      </video>
+      <iframe id="modalYoutube" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="display:none"></iframe>
+      <div class="video-not-ready" id="videoNotReady">
+        <div class="icon">🎬</div>
+        <h3>Video Coming Soon</h3>
+        <p>Place your video file in the <code>frontend/videos/slow/</code> folder.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+  <div class="page-header animate-fade-up">
+    <div class="level-tag">🐢 Slow Learner Path</div>
+    <h1>🎬 Visual Lesson Library</h1>
+    <p>Watch each lesson carefully. Each video explains one key concept step by step with clear visuals.</p>
+  </div>
+
+  <div class="video-grid animate-fade-up delay-100">
+
+    <div class="video-card" onclick="window.location.href='videos/slow/lesson1.html'">
+      <div class="video-thumb">
+        <img src="thumbnails/slow-lesson1-enhanced.svg" alt="Lesson 1" class="video-thumb-img">
+        <span class="coming-soon-badge">✅ Ready</span>
+        <div class="play-overlay"><div class="play-btn-circle">▶</div></div>
+      </div>
+      <div class="video-info">
+        <div class="video-num">Lesson 1</div>
+        <div class="video-title">What is a Right Triangle?</div>
+        <div class="video-desc">Learn what makes a triangle a right triangle and identify its three sides with clear visuals.</div>
+      </div>
+    </div>
+
+    <div class="video-card" onclick="window.location.href='videos/slow/lesson2.html'">
+      <div class="video-thumb">
+        <img src="thumbnails/slow-lesson2-enhanced.svg" alt="Lesson 2" class="video-thumb-img">
+        <span class="coming-soon-badge">✅ Ready</span>
+        <div class="play-overlay"><div class="play-btn-circle">▶</div></div>
+      </div>
+      <div class="video-info">
+        <div class="video-num">Lesson 2</div>
+        <div class="video-title">Introduction to Pythagoras Theorem</div>
+        <div class="video-desc">Understand the Pythagoras theorem and what a² + b² = c² means in simple terms.</div>
+      </div>
+    </div>
+
+    <div class="video-card" onclick="window.location.href='videos/slow/lesson3.html'">
+      <div class="video-thumb">
+        <img src="thumbnails/slow-lesson3-enhanced.svg" alt="Lesson 3" class="video-thumb-img">
+        <span class="coming-soon-badge">✅ Ready</span>
+        <div class="play-overlay"><div class="play-btn-circle">▶</div></div>
+      </div>
+      <div class="video-info">
+        <div class="video-num">Lesson 3</div>
+        <div class="video-title">Proof Using Squares</div>
+        <div class="video-desc">See a visual proof of the theorem using coloured squares drawn on each side of the triangle.</div>
+      </div>
+    </div>
+
+    <div class="video-card" onclick="window.location.href='videos/slow/lesson4.html'">
+      <div class="video-thumb">
+        <img src="thumbnails/slow-lesson4-enhanced.svg" alt="Lesson 4" class="video-thumb-img">
+        <span class="coming-soon-badge">✅ Ready</span>
+        <div class="play-overlay"><div class="play-btn-circle">▶</div></div>
+      </div>
+      <div class="video-info">
+        <div class="video-num">Lesson 4</div>
+        <div class="video-title">Finding the Hypotenuse (Basic Example)</div>
+        <div class="video-desc">Work through the 3-4-5 triangle step by step to find the hypotenuse using the formula.</div>
+      </div>
+    </div>
+
+    <div class="video-card" onclick="window.location.href='videos/slow/lesson5.html'">
+      <div class="video-thumb">
+        <img src="thumbnails/slow-lesson5-enhanced.svg" alt="Lesson 5" class="video-thumb-img">
+        <span class="coming-soon-badge">✅ Ready</span>
+        <div class="play-overlay"><div class="play-btn-circle">▶</div></div>
+      </div>
+      <div class="video-info">
+        <div class="video-num">Lesson 5</div>
+        <div class="video-title">Finding Missing Side (Step-by-Step)</div>
+        <div class="video-desc">Learn how to rearrange the formula to find a missing leg when the hypotenuse is known.</div>
+      </div>
+    </div>
+
+    <div class="video-card" onclick="playVideo('videos/slow/lesson6.mp4','Lesson 6 — Complete Pythagoras Theorem (Full Revision)')">
+      <div class="video-thumb">
+        <img src="thumbnails/slow-lesson6-enhanced.svg" alt="Lesson 6" class="video-thumb-img">
+        <span class="coming-soon-badge">✅ Ready</span>
+        <div class="play-overlay"><div class="play-btn-circle">▶</div></div>
+      </div>
+      <div class="video-info">
+        <div class="video-num">Lesson 6</div>
+        <div class="video-title">Complete Pythagoras Theorem (Full Revision)</div>
+        <div class="video-desc">A full revision of all concepts — triangles, formula, examples, and key rules to remember.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="next-section animate-fade-up delay-200">
+    <div>
+      <h3>Ready to test your knowledge?</h3>
+      <p>After watching the lessons, take the evaluation quiz to check your understanding.</p>
+    </div>
+    <button class="btn-next" onclick="window.location.href='deaf_slow_test.html'">Take Evaluation Quiz →</button>
+  </div>
+</div>
+
+<script>
+  function toYoutubeEmbed(url) {
+    try {
+      const parsed = new URL(url);
+      if (parsed.hostname.includes('youtu.be')) {
+        const id = parsed.pathname.replace('/', '');
+        return id ? `https://www.youtube.com/embed/${id}?autoplay=1&rel=0` : null;
+      }
+      if (parsed.hostname.includes('youtube.com')) {
+        const id = parsed.searchParams.get('v');
+        return id ? `https://www.youtube.com/embed/${id}?autoplay=1&rel=0` : null;
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  function playVideo(src, title) {
+    document.getElementById('modalTitle').textContent = title;
+    const video = document.getElementById('modalVideo');
+    const videoSrc = document.getElementById('modalVideoSrc');
+    const youtube = document.getElementById('modalYoutube');
+    const notReady = document.getElementById('videoNotReady');
+    const embedSrc = toYoutubeEmbed(src);
+
+    if (embedSrc) {
+      video.pause();
+      video.currentTime = 0;
+      videoSrc.src = '';
+      video.style.display = 'none';
+      notReady.style.display = 'none';
+      youtube.src = embedSrc;
+      youtube.style.display = 'block';
+    } else {
+      youtube.src = '';
+      youtube.style.display = 'none';
+      videoSrc.src = src;
+      video.style.display = 'block';
+      notReady.style.display = 'none';
+      video.load();
+      video.play().catch(() => {
+        video.style.display = 'none';
+        notReady.style.display = 'flex';
+      });
+    }
+
+    document.getElementById('videoModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeVideoModal() {
+    const video = document.getElementById('modalVideo');
+    const youtube = document.getElementById('modalYoutube');
+    video.pause(); video.currentTime = 0;
+    youtube.src = '';
+    youtube.style.display = 'none';
+    document.getElementById('videoModal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function closeModal(e) {
+    if (e.target === document.getElementById('videoModal')) closeVideoModal();
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeVideoModal(); });
+</script>
+</body>
+</html>

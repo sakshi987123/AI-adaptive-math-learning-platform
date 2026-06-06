@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SimplexMath — Learn Pythagorean Theorem</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* Lock page to viewport — no scroll */
+  body {
+    overflow: hidden;
+    height: 100vh;
+  }
+
+  .learn-page {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding: 70px 2rem 1rem; /* 70px = nav height */
+  }
+
+  /* HERO */
+  .learn-hero {
+    text-align: center;
+    margin-bottom: 0.6rem;
+  }
+  .learn-hero h1 {
+    font-size: clamp(2.4rem, 5vw, 3.8rem);
+    margin-bottom: 0.35rem;
+  }
+  .learn-hero p {
+    color: var(--muted-text);
+    font-size: 1.1rem;
+  }
+
+  /* CARD */
+  .theorem-card {
+    background: var(--surface);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--card-border);
+    border-radius: 24px;
+    padding: 1.2rem 2rem;
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  }
+
+  .formula {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+  }
+
+  .formula-labels {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    margin-bottom: 0.6rem;
+  }
+  .label {
+    font-size: 0.8rem;
+    color: var(--muted-text);
+    text-align: center;
+  }
+  .label span {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.15rem;
+  }
+
+  /* Triangle */
+  .triangle-container {
+    margin: 0.3rem auto 0.5rem;
+    width: 130px;
+    height: 115px;
+  }
+  .triangle-svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 12px rgba(255,255,255,0.08));
+  }
+
+  @keyframes drawSide {
+    from { stroke-dashoffset: 350; }
+    to   { stroke-dashoffset: 0; }
+  }
+  .side-a { stroke-dasharray:350; stroke-dashoffset:350; animation: drawSide 1.5s ease 0.3s forwards; }
+  .side-b { stroke-dasharray:350; stroke-dashoffset:350; animation: drawSide 1.5s ease 0.6s forwards; }
+  .side-c { stroke-dasharray:350; stroke-dashoffset:350; animation: drawSide 1.5s ease 0.9s forwards; }
+
+  .theorem-desc {
+    color: var(--muted-text);
+    font-size: 0.82rem;
+    max-width: 460px;
+    margin: 0 auto;
+    line-height: 1.5;
+  }
+
+  /* Button */
+  .learn-action {
+    margin-top: 1rem;
+  }
+
+  /* Profile dropdown */
+  .profile-wrap { position: relative; }
+  .profile-btn { display: flex; align-items: center; gap: 0.6rem; padding: 0.4rem 0.8rem 0.4rem 0.4rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 100px; cursor: pointer; transition: all 0.2s; color: #fff; font-family: 'Inter', sans-serif; font-size: 0.88rem; font-weight: 500; }
+  .profile-btn:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.15); }
+  .profile-avatar { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, var(--blind), var(--deaf)); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; color: #000; flex-shrink: 0; overflow: hidden; }
+  .profile-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+  .profile-chevron { font-size: 0.65rem; color: #64748b; transition: transform 0.2s; }
+  .profile-wrap.open .profile-chevron { transform: rotate(180deg); }
+  .profile-dropdown { display: none; position: absolute; top: calc(100% + 10px); right: 0; width: 240px; background: #0f0f14; border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); overflow: hidden; z-index: 200; }
+  .profile-wrap.open .profile-dropdown { display: block; }
+  .profile-info { padding: 1.1rem 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; gap: 0.8rem; }
+  .profile-info-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--blind), var(--deaf)); display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; color: #000; flex-shrink: 0; overflow: hidden; }
+  .profile-info-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+  .profile-info-text { min-width: 0; }
+  .profile-info-name { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 0.92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .profile-info-email { font-size: 0.75rem; color: #475569; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dropdown-menu { padding: 0.5rem; }
+  .dropdown-item { display: flex; align-items: center; gap: 0.7rem; padding: 0.65rem 0.8rem; border-radius: 10px; font-size: 0.88rem; color: #94a3b8; cursor: pointer; transition: all 0.15s; text-decoration: none; border: none; background: none; width: 100%; text-align: left; font-family: 'Inter', sans-serif; }
+  .dropdown-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+  .dropdown-item.danger:hover { background: rgba(239,68,68,0.08); color: #f87171; }
+  .dropdown-icon { font-size: 1rem; width: 20px; text-align: center; }
+  .dropdown-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 0.4rem 0.5rem; }
+</style>
+</head>
+<body>
+<div class="orb orb-cyan"></div>
+<div class="orb orb-purple"></div>
+<div class="orb orb-gold"></div>
+
+<nav>
+  <a href="index.html" class="nav-logo">SimplexMath</a>
+  <a href="index.html" class="btn btn-outline" style="padding:0.5rem 1.2rem;font-size:0.9rem;">← Back Home</a>
+  <div class="profile-wrap" id="profileWrap">
+    <button class="profile-btn" onclick="toggleProfile()">
+      <div class="profile-avatar" id="navAvatar">?</div>
+      <span id="userName"></span>
+      <span class="profile-chevron">▼</span>
+    </button>
+    <div class="profile-dropdown">
+      <div class="profile-info">
+        <div class="profile-info-avatar" id="dropAvatar">?</div>
+        <div class="profile-info-text">
+          <div class="profile-info-name" id="dropName">—</div>
+          <div class="profile-info-email" id="dropEmail">—</div>
+        </div>
+      </div>
+      <div class="dropdown-menu">
+        <a href="profile.html" class="dropdown-item"><span class="dropdown-icon">👤</span> My Profile</a>
+        <a href="profile.html" class="dropdown-item"><span class="dropdown-icon">📊</span> My Progress</a>
+        <div class="dropdown-divider"></div>
+        <button class="dropdown-item danger" onclick="handleLogout()"><span class="dropdown-icon">🚪</span> Logout</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="learn-page">
+
+  <!-- HERO -->
+  <div class="learn-hero animate-fade-up">
+    <h1>Learn the <span class="text-gradient">Theorem</span></h1>
+    <p>Simple tricks that make the theorem unforgettable — for every kind of learner.</p>
+  </div>
+
+  <!-- THEOREM CARD -->
+  <div class="theorem-card animate-fade-up delay-200">
+    <div class="formula">
+      <span class="text-cyan">a²</span> + <span class="text-purple">b²</span> = <span class="text-gold">c²</span>
+    </div>
+
+    <div class="formula-labels">
+      <div class="label"><span class="text-cyan">a</span>First side</div>
+      <div class="label"><span class="text-purple">b</span>Second side</div>
+      <div class="label"><span class="text-gold">c</span>Hypotenuse</div>
+    </div>
+
+    <div class="triangle-container">
+      <svg class="triangle-svg" viewBox="0 0 250 220" xmlns="http://www.w3.org/2000/svg">
+        <rect x="30" y="150" width="20" height="20" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+        <line class="side-a" x1="30" y1="30" x2="30" y2="170" stroke="var(--blind)" stroke-width="4" stroke-linecap="round"/>
+        <line class="side-b" x1="50" y1="170" x2="220" y2="170" stroke="var(--deaf)" stroke-width="4" stroke-linecap="round"/>
+        <line class="side-c" x1="30" y1="30" x2="220" y2="170" stroke="var(--gold)" stroke-width="4" stroke-linecap="round"/>
+        <text x="5"   y="105" fill="var(--blind)" font-family="Outfit,sans-serif" font-weight="700" font-size="20">a</text>
+        <text x="130" y="200" fill="var(--deaf)"  font-family="Outfit,sans-serif" font-weight="700" font-size="20">b</text>
+        <text x="135" y="85"  fill="var(--gold)"  font-family="Outfit,sans-serif" font-weight="700" font-size="20">c</text>
+      </svg>
+    </div>
+
+    <p class="theorem-desc">
+      In any <strong style="color:#fff">right-angled triangle</strong>, the square of the hypotenuse equals the sum of squares of the other two sides.
+    </p>
+  </div>
+
+  <!-- BUTTON -->
+  <div class="learn-action animate-fade-up delay-300">
+    <a href="Disability.html" class="btn btn-primary" style="padding:1rem 2.8rem;font-size:1.05rem;">
+      Choose Your Path →
+    </a>
+  </div>
+
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  const firebaseConfig = { apiKey:"AIzaSyDS8hshom-srb-96anMSjr2wpq2_1A9Nk0", authDomain:"simplemath-20773.firebaseapp.com", projectId:"simplemath-20773", storageBucket:"simplemath-20773.firebasestorage.app", messagingSenderId:"798012087027", appId:"1:798012087027:web:8db7ea6b21cea5fdacb586" };
+  const auth = getAuth(initializeApp(firebaseConfig));
+  onAuthStateChanged(auth, (user) => {
+    if (!user) { window.location.href = 'login.html'; return; }
+    const name = user.displayName || 'User';
+    const initials = name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+    document.getElementById('userName').textContent = name.split(' ')[0];
+    document.getElementById('dropName').textContent = name;
+    document.getElementById('dropEmail').textContent = user.email || '';
+    if (user.photoURL) {
+      document.getElementById('navAvatar').innerHTML = `<img src="${user.photoURL}"/>`;
+      document.getElementById('dropAvatar').innerHTML = `<img src="${user.photoURL}"/>`;
+    } else {
+      document.getElementById('navAvatar').textContent = initials;
+      document.getElementById('dropAvatar').textContent = initials;
+    }
+  });
+  window.toggleProfile = () => document.getElementById('profileWrap').classList.toggle('open');
+  window.handleLogout = async () => { await signOut(auth); window.location.href = 'login.html'; };
+  document.addEventListener('click', (e) => { const w = document.getElementById('profileWrap'); if(w && !w.contains(e.target)) w.classList.remove('open'); });
+</script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<svg width="320" height="180" viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg-enhanced5" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#9333ea;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#6366f1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4f46e5;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="formula-enhanced5" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f59e0b;stop-opacity:1" />
+    </linearGradient>
+    <filter id="deep-shadow">
+      <feDropShadow dx="0" dy="18" stdDeviation="25" flood-opacity="0.9"/>
+    </filter>
+    <filter id="bright-glow">
+      <feGaussianBlur stdDeviation="10" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <radialGradient id="spotlight">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0" />
+    </radialGradient>
+  </defs>
+  
+  <!-- Dramatic background -->
+  <rect width="320" height="180" fill="url(#bg-enhanced5)"/>
+  
+  <!-- Spotlight effect -->
+  <ellipse cx="160" cy="90" rx="140" ry="70" fill="url(#spotlight)" opacity="0.4"/>
+  
+  <!-- Sparkle pattern -->
+  <pattern id="sparkle-pattern" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
+    <circle cx="30" cy="30" r="1" fill="rgba(255,255,255,0.6)">
+      <animate attributeName="opacity" values="0.6;0.2;0.6" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="10" cy="10" r="0.8" fill="rgba(255,255,255,0.4)">
+      <animate attributeName="opacity" values="0.4;0.1;0.4" dur="1.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="50" cy="50" r="0.6" fill="rgba(255,255,255,0.5)">
+      <animate attributeName="opacity" values="0.5;0.2;0.5" dur="1.8s" repeatCount="indefinite"/>
+    </circle>
+  </pattern>
+  <rect width="320" height="180" fill="url(#sparkle-pattern)"/>
+  
+  <!-- Dramatic formula rearrangement -->
+  <g transform="translate(160, 85)" filter="url(#deep-shadow)">
+    <!-- Original formula with depth -->
+    <g transform="translate(-80, -30)">
+      <rect x="0" y="0" width="160" height="50" fill="rgba(251,191,36,0.2)" rx="10"/>
+      <rect x="0" y="0" width="160" height="50" fill="rgba(251,191,36,0.3)" rx="10"/>
+      <rect x="0" y="0" width="160" height="50" fill="url(#formula-enhanced5)" rx="10"/>
+      <text x="80" y="30" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="18" font-weight="bold" filter="url(#bright-glow)">a² + b² = c²</text>
+    </g>
+    
+    <!-- Arrow transformation -->
+    <g transform="translate(0, -20)">
+      <path d="M 0,0 L 0,40" stroke="#fbbf24" stroke-width="4" stroke-linecap="round" filter="url(#bright-glow)">
+        <animate attributeName="d" values="M 0,0 L 0,40;M 0,0 L 0,30;M 0,0 L 0,40" dur="3s" repeatCount="indefinite"/>
+      </path>
+      <path d="M -5,35 L 5,35" stroke="#fbbf24" stroke-width="3" stroke-linecap="round" filter="url(#bright-glow)"/>
+    </g>
+    
+    <!-- Rearranged formula -->
+    <g transform="translate(80, 10)">
+      <rect x="0" y="0" width="160" height="50" fill="rgba(251,191,36,0.2)" rx="10"/>
+      <rect x="0" y="0" width="160" height="50" fill="rgba(251,191,36,0.3)" rx="10"/>
+      <rect x="0" y="0" width="160" height="50" fill="url(#formula-enhanced5)" rx="10"/>
+      <text x="80" y="30" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="18" font-weight="bold" filter="url(#bright-glow)">a² = c² - b²</text>
+    </g>
+  </g>
+  
+  <!-- Floating mathematical symbols -->
+  <g opacity="0.9">
+    <text x="50" y="40" fill="#fbbf24" font-family="Arial, sans-serif" font-size="24" font-weight="bold" filter="url(#bright-glow)">√</text>
+    <text x="270" y="70" fill="#fbbf24" font-family="Arial, sans-serif" font-size="20" font-weight="bold" filter="url(#bright-glow)">π</text>
+    <text x="80" y="140" fill="#fbbf24" font-family="Arial, sans-serif" font-size="18" font-weight="bold" filter="url(#bright-glow)">α</text>
+    <text x="240" y="120" fill="#fbbf24" font-family="Arial, sans-serif" font-size="16" font-weight="bold" filter="url(#bright-glow)">θ</text>
+  </g>
+  
+  <!-- Title section with dramatic depth -->
+  <rect x="10" y="140" width="300" height="35" fill="rgba(79,70,229,0.95)" rx="8" filter="url(#deep-shadow)"/>
+  <rect x="15" y="145" width="290" height="25" fill="rgba(251,191,36,0.9)" rx="6"/>
+  <text x="160" y="158" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="28" font-weight="bold" filter="url(#bright-glow)">Lesson 5</text>
+  <text x="160" y="176" text-anchor="middle" fill="#fbbf24" font-family="Arial, sans-serif" font-size="13" font-weight="600">Finding Missing Side</text>
+</svg>

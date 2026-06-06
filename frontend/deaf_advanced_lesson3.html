@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 3 — Fast Problem Solving: Hypotenuse</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap');
+
+  :root {
+    --bg: #0a0f1e;
+    --panel: #0d1528;
+    --accent: #00e5ff;
+    --gold: #ffd94a;
+    --green: #00ff9d;
+    --red: #ff4e6a;
+    --purple: #c084fc;
+    --text: #e8f0fe;
+    --muted: #8899bb;
+    --border: rgba(0,229,255,0.15);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* TOP BAR */
+  .topbar {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 24px;
+    background: rgba(13,21,40,0.95);
+    border-bottom: 1px solid var(--border);
+    z-index: 100;
+  }
+  .lesson-badge {
+    background: linear-gradient(135deg,#ffd94a22,#ffd94a44);
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-family:'Space Mono',monospace;
+    font-size:11px; padding:4px 12px;
+    border-radius:20px; letter-spacing:2px;
+  }
+  .lesson-title-top { font-size:14px; font-weight:700; color:var(--text); letter-spacing:1px; }
+  .controls { display:flex; gap:10px; align-items:center; }
+  .btn-ctrl {
+    background: rgba(255,217,74,0.1);
+    border: 1px solid rgba(255,217,74,0.3);
+    color: var(--gold);
+    font-family:'Space Mono',monospace;
+    font-size:11px; padding:6px 14px;
+    border-radius:6px; cursor:pointer;
+    transition: all 0.2s; letter-spacing:1px;
+  }
+  .btn-ctrl:hover { background: rgba(255,217,74,0.2); }
+
+  /* PROGRESS */
+  .progress-bar { height:3px; background:rgba(255,217,74,0.1); position:relative; }
+  .progress-fill {
+    height:100%;
+    background: linear-gradient(90deg, var(--gold), var(--green));
+    width:0%; transition:width 0.3s ease;
+  }
+
+  /* MAIN LAYOUT */
+  .main { flex:1; display:flex; overflow:hidden; }
+
+  /* STAGE */
+  .stage {
+    flex:1; position:relative;
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden;
+    background: radial-gradient(ellipse at center, #1a1000 0%, #0a0f1e 70%);
+  }
+  .stage::before {
+    content:''; position:absolute; inset:0;
+    background-image:
+      linear-gradient(rgba(255,217,74,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,217,74,0.03) 1px, transparent 1px);
+    background-size:40px 40px;
+  }
+
+  .slide {
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    opacity:0; pointer-events:none;
+    flex-direction:column; padding:20px;
+  }
+  .slide.active { opacity:1; pointer-events:all; }
+
+  .slide-headline {
+    font-size:12px; font-family:'Space Mono',monospace;
+    color:var(--gold); letter-spacing:3px; text-transform:uppercase;
+    margin-bottom:10px; text-align:center; opacity:0;
+  }
+  .slide-body-text {
+    font-size:15px; color:var(--muted);
+    text-align:center; max-width:520px; line-height:1.8;
+    margin-top:14px; opacity:0;
+  }
+  .formula-box {
+    background:rgba(255,217,74,0.06);
+    border:1px solid var(--gold);
+    border-radius:12px; padding:16px 32px;
+    font-family:'Space Mono',monospace;
+    font-size:26px; color:var(--gold);
+    text-align:center; opacity:0; margin-top:14px;
+  }
+
+  /* PROBLEM BOX */
+  .problem-card {
+    background:rgba(13,21,40,0.9);
+    border:1px solid rgba(255,217,74,0.4);
+    border-radius:14px; padding:22px 30px;
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+    opacity:0; min-width:320px;
+  }
+  .problem-label {
+    font-family:'Space Mono',monospace; font-size:10px;
+    color:var(--muted); letter-spacing:3px; text-transform:uppercase;
+  }
+  .problem-eq {
+    font-family:'Space Mono',monospace; font-size:22px; color:var(--text);
+    text-align:center; line-height:1.8;
+  }
+  .problem-ans {
+    font-family:'Space Mono',monospace; font-size:28px;
+    color:var(--green); opacity:0; font-weight:700;
+  }
+
+  /* STEP BOXES */
+  .steps-col { display:flex; flex-direction:column; gap:10px; width:460px; }
+  .step-box {
+    background:rgba(13,21,40,0.85);
+    border-left:3px solid var(--gold);
+    border-radius:0 8px 8px 0;
+    padding:12px 18px;
+    opacity:0;
+    display:flex; align-items:center; gap:14px;
+  }
+  .step-num {
+    font-family:'Space Mono',monospace; font-size:11px;
+    color:var(--gold); min-width:24px;
+  }
+  .step-text { font-size:14px; color:var(--text); line-height:1.5; }
+  .step-math { font-family:'Space Mono',monospace; font-size:13px; color:var(--accent); }
+
+  /* TRIANGLE SVG container */
+  .svg-wrap { position:relative; }
+
+  /* CALLOUTS */
+  .callout {
+    position:absolute;
+    background:rgba(13,21,40,0.92);
+    border:1px solid var(--accent); border-radius:8px;
+    padding:7px 13px;
+    font-family:'Space Mono',monospace; font-size:11px; color:var(--accent);
+    white-space:nowrap; opacity:0; pointer-events:none;
+  }
+  .callout.gold { border-color:var(--gold); color:var(--gold); }
+  .callout.green { border-color:var(--green); color:var(--green); }
+
+  /* CELEBRATION */
+  .confetti-row {
+    display:flex; gap:16px; font-size:36px; opacity:0;
+  }
+
+  /* SIGN PANEL */
+  .sign-panel {
+    width:230px; background:var(--panel);
+    border-left:1px solid var(--border);
+    display:flex; flex-direction:column; align-items:center;
+    padding:16px 12px; gap:10px; overflow-y:auto;
+  }
+  .sign-label {
+    font-family:'Space Mono',monospace; font-size:9px;
+    color:var(--muted); letter-spacing:2px; text-transform:uppercase;
+  }
+  .interpreter-box {
+    width:185px; height:185px; border-radius:14px;
+    background:linear-gradient(135deg,#0d2035,#0a1628);
+    border:1px solid var(--border);
+    position:relative; overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  /* SVG avatar */
+  .avatar-svg { width:120px; height:160px; }
+
+  .sign-word {
+    font-family:'Space Mono',monospace; font-size:11px;
+    color:var(--gold); letter-spacing:2px; text-align:center;
+    background:rgba(255,217,74,0.08);
+    border:1px solid rgba(255,217,74,0.3);
+    border-radius:6px; padding:6px 12px; width:100%;
+  }
+  .sign-glossary {
+    width:100%; background:rgba(0,0,0,0.2);
+    border:1px solid var(--border); border-radius:8px; padding:10px 12px;
+  }
+  .sign-glossary h4 {
+    font-family:'Space Mono',monospace; font-size:9px;
+    color:var(--muted); letter-spacing:2px; text-transform:uppercase;
+    margin-bottom:8px;
+  }
+  .sign-term {
+    display:flex; justify-content:space-between;
+    font-family:'Space Mono',monospace; font-size:9px;
+    color:var(--muted); padding:4px 0;
+    border-bottom:1px solid rgba(255,255,255,0.05);
+  }
+  .sign-term:last-child { border-bottom:none; }
+  .sign-term span:first-child { color:var(--text); }
+
+  /* BOTTOM BAR */
+  .bottombar {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:8px 24px;
+    background:rgba(13,21,40,0.95);
+    border-top:1px solid var(--border);
+  }
+  .slide-counter {
+    font-family:'Space Mono',monospace; font-size:10px;
+    color:var(--muted); letter-spacing:2px;
+  }
+  .caption-bar {
+    font-size:13px; color:var(--text); text-align:center;
+    max-width:500px; flex:1; margin:0 20px;
+    font-style:italic;
+  }
+  .slide-dots { display:flex; gap:8px; align-items:center; }
+  .dot {
+    width:8px; height:8px; border-radius:50%;
+    background:rgba(255,217,74,0.2); cursor:pointer;
+    transition:all 0.3s;
+  }
+  .dot.active { background:var(--gold); transform:scale(1.3); }
+  .dot.done { background:var(--green); }
+
+  /* highlight spans */
+  .hl-gold { color:var(--gold); font-weight:700; }
+  .hl-green { color:var(--green); font-weight:700; }
+  .hl-accent { color:var(--accent); font-weight:700; }
+  .hl-red { color:var(--red); font-weight:700; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="lesson-badge">LESSON 3</div>
+  <div class="lesson-title-top">⚡ Fast Problem Solving — Hypotenuse</div>
+  <div class="controls">
+    <button class="btn-ctrl" onclick="prevSlide()">◀ PREV</button>
+    <button class="btn-ctrl" id="pauseBtn" onclick="togglePause()">⏸ PAUSE</button>
+    <button class="btn-ctrl" onclick="nextSlide()">NEXT ▶</button>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+<div class="main">
+
+  <!-- ═══════════════════════════════════════════════ STAGE -->
+  <div class="stage">
+
+    <!-- SLIDE 1: Intro -->
+    <div class="slide active" id="s1">
+      <div class="slide-headline" id="s1-hl">LESSON 3 · FAST PROBLEM SOLVING</div>
+      <div style="font-size:52px;font-weight:800;color:var(--gold);opacity:0;text-align:center;line-height:1.1;" id="s1-title">
+        Finding<br>Hypotenuse
+      </div>
+      <div style="font-size:15px;color:var(--muted);opacity:0;text-align:center;margin-top:14px;max-width:460px;line-height:1.7;" id="s1-sub">
+        Given the two legs <span class="hl-accent">a</span> and <span class="hl-gold">b</span>,<br>
+        we calculate <span class="hl-gold">c</span> using <strong>c = √(a² + b²)</strong>
+      </div>
+      <div class="formula-box" id="s1-formula">c = √(a² + b²)</div>
+    </div>
+
+    <!-- SLIDE 2: The Formula -->
+    <div class="slide" id="s2">
+      <div class="slide-headline" id="s2-hl">THE CORE FORMULA</div>
+      <svg width="540" height="340" viewBox="0 0 540 340">
+        <!-- Triangle fill -->
+        <polygon id="tri2" points="80,280 80,80 380,280" fill="rgba(255,217,74,0.06)" stroke="none" opacity="0"/>
+        <!-- Legs -->
+        <line id="leg-a" x1="80" y1="280" x2="80" y2="80" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-dasharray="200" stroke-dashoffset="200"/>
+        <line id="leg-b" x1="80" y1="280" x2="380" y2="280" stroke="var(--green)" stroke-width="3" stroke-linecap="round" stroke-dasharray="300" stroke-dashoffset="300"/>
+        <!-- Hypotenuse -->
+        <line id="hyp2" x1="80" y1="80" x2="380" y2="280" stroke="var(--gold)" stroke-width="4" stroke-linecap="round" stroke-dasharray="364" stroke-dashoffset="364"/>
+        <!-- Right angle box -->
+        <rect id="ra2" x="80" y="258" width="22" height="22" fill="none" stroke="var(--text)" stroke-width="2" opacity="0"/>
+        <!-- Labels -->
+        <text id="la2" x="50" y="190" font-family="Space Mono" font-size="18" fill="var(--accent)" opacity="0">a</text>
+        <text id="lb2" x="215" y="310" font-family="Space Mono" font-size="18" fill="var(--green)" opacity="0">b</text>
+        <text id="lc2" x="235" y="168" font-family="Space Mono" font-size="18" fill="var(--gold)" opacity="0">c</text>
+        <!-- Angle arcs -->
+        <path id="arc2" d="M 110,80 A 30,30 0 0,1 80,110" fill="none" stroke="var(--purple)" stroke-width="2" opacity="0"/>
+        <text id="ang2" x="115" y="105" font-family="Space Mono" font-size="11" fill="var(--purple)" opacity="0">θ</text>
+        <!-- Formula callout -->
+        <rect id="fbox2" x="400" y="120" width="120" height="70" rx="8" fill="rgba(255,217,74,0.08)" stroke="var(--gold)" stroke-width="1" opacity="0"/>
+        <text id="ftxt2a" x="410" y="150" font-family="Space Mono" font-size="13" fill="var(--gold)" opacity="0">c² = a² + b²</text>
+        <text id="ftxt2b" x="410" y="174" font-family="Space Mono" font-size="11" fill="var(--muted)" opacity="0">c = √(a²+b²)</text>
+      </svg>
+      <div class="slide-body-text" id="s2-text">
+        <span class="hl-accent">a</span> and <span class="hl-green">b</span> are legs (shorter sides).<br>
+        <span class="hl-gold">c</span> is hypotenuse — always the longest side, opposite the 90° angle.
+      </div>
+    </div>
+
+    <!-- SLIDE 3: Step-by-Step (3,4,5 triangle) -->
+    <div class="slide" id="s3">
+      <div class="slide-headline" id="s3-hl">STEP-BY-STEP · EXAMPLE 1</div>
+      <div style="display:flex; gap:28px; align-items:flex-start; margin-top:8px;">
+        <svg width="240" height="220" viewBox="0 0 240 220">
+          <polygon id="tri3" points="20,200 20,30 200,200" fill="rgba(0,229,255,0.06)" stroke="none" opacity="0"/>
+          <line x1="20" y1="200" x2="20" y2="30" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+          <line x1="20" y1="200" x2="200" y2="200" stroke="var(--green)" stroke-width="3" stroke-linecap="round"/>
+          <line id="hyp3" x1="20" y1="30" x2="200" y2="200" stroke="var(--gold)" stroke-width="4" stroke-dasharray="260" stroke-dashoffset="260"/>
+          <rect x="20" y="178" width="22" height="22" fill="none" stroke="var(--text)" stroke-width="2"/>
+          <text x="2" y="120" font-family="Space Mono" font-size="15" fill="var(--accent)">a=3</text>
+          <text x="85" y="218" font-family="Space Mono" font-size="15" fill="var(--green)">b=4</text>
+          <text id="hyp3-lbl" x="105" y="120" font-family="Space Mono" font-size="15" fill="var(--gold)" opacity="0">c=?</text>
+        </svg>
+        <div class="steps-col">
+          <div class="step-box" id="step31">
+            <span class="step-num">①</span>
+            <div><div class="step-text">Write formula</div><div class="step-math">c² = a² + b²</div></div>
+          </div>
+          <div class="step-box" id="step32">
+            <span class="step-num">②</span>
+            <div><div class="step-text">Substitute values</div><div class="step-math">c² = 3² + 4² = 9 + 16</div></div>
+          </div>
+          <div class="step-box" id="step33">
+            <span class="step-num">③</span>
+            <div><div class="step-text">Add squares</div><div class="step-math">c² = 25</div></div>
+          </div>
+          <div class="step-box" id="step34">
+            <span class="step-num">④</span>
+            <div><div class="step-text">Take square root</div><div class="step-math">c = √25 = <span style="color:var(--green);font-size:18px;">5 ✓</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4: Example 2 (5,12,13) -->
+    <div class="slide" id="s4">
+      <div class="slide-headline" id="s4-hl">EXAMPLE 2 · SPEED DRILL</div>
+      <div style="display:flex; gap:28px; align-items:flex-start; margin-top:8px;">
+        <svg width="240" height="220" viewBox="0 0 240 220">
+          <polygon points="20,200 20,30 200,200" fill="rgba(255,217,74,0.06)" stroke="none"/>
+          <line x1="20" y1="200" x2="20" y2="30" stroke="var(--accent)" stroke-width="3"/>
+          <line x1="20" y1="200" x2="200" y2="200" stroke="var(--green)" stroke-width="3"/>
+          <line id="hyp4" x1="20" y1="30" x2="200" y2="200" stroke="var(--gold)" stroke-width="4" stroke-dasharray="260" stroke-dashoffset="260"/>
+          <rect x="20" y="178" width="22" height="22" fill="none" stroke="var(--text)" stroke-width="2"/>
+          <text x="2" y="120" font-family="Space Mono" font-size="14" fill="var(--accent)">a=5</text>
+          <text x="80" y="218" font-family="Space Mono" font-size="14" fill="var(--green)">b=12</text>
+          <text id="hyp4-lbl" x="100" y="120" font-family="Space Mono" font-size="14" fill="var(--gold)" opacity="0">c=?</text>
+        </svg>
+        <div class="steps-col">
+          <div class="step-box" id="step41">
+            <span class="step-num">①</span>
+            <div><div class="step-text">Formula</div><div class="step-math">c² = 5² + 12²</div></div>
+          </div>
+          <div class="step-box" id="step42">
+            <span class="step-num">②</span>
+            <div><div class="step-text">Square each</div><div class="step-math">c² = 25 + 144</div></div>
+          </div>
+          <div class="step-box" id="step43">
+            <span class="step-num">③</span>
+            <div><div class="step-text">Add</div><div class="step-math">c² = 169</div></div>
+          </div>
+          <div class="step-box" id="step44">
+            <span class="step-num">④</span>
+            <div><div class="step-text">Root</div><div class="step-math">c = √169 = <span style="color:var(--green);font-size:18px;">13 ✓</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 5: Speed Tricks -->
+    <div class="slide" id="s5">
+      <div class="slide-headline" id="s5-hl">PYTHAGOREAN TRIPLES — MEMORISE THESE</div>
+      <svg width="500" height="270" viewBox="0 0 500 270">
+        <!-- Triple cards -->
+        <rect id="t1" x="10" y="20" width="140" height="230" rx="10" fill="rgba(0,229,255,0.06)" stroke="var(--accent)" stroke-width="1" opacity="0"/>
+        <text x="80" y="55" font-family="Space Mono" font-size="11" fill="var(--accent)" text-anchor="middle" opacity="0" id="t1a">CLASSIC</text>
+        <text x="80" y="100" font-family="Space Mono" font-size="28" fill="var(--gold)" text-anchor="middle" opacity="0" id="t1b">3·4·5</text>
+        <text x="80" y="135" font-family="Space Mono" font-size="11" fill="var(--muted)" text-anchor="middle" opacity="0" id="t1c">9+16=25</text>
+        <text x="80" y="170" font-family="Space Mono" font-size="11" fill="var(--green)" text-anchor="middle" opacity="0" id="t1d">×2 → 6·8·10</text>
+        <text x="80" y="195" font-family="Space Mono" font-size="11" fill="var(--green)" text-anchor="middle" opacity="0" id="t1e">×3 → 9·12·15</text>
+
+        <rect id="t2" x="180" y="20" width="140" height="230" rx="10" fill="rgba(255,217,74,0.06)" stroke="var(--gold)" stroke-width="1" opacity="0"/>
+        <text x="250" y="55" font-family="Space Mono" font-size="11" fill="var(--gold)" text-anchor="middle" opacity="0" id="t2a">COMMON</text>
+        <text x="250" y="100" font-family="Space Mono" font-size="28" fill="var(--gold)" text-anchor="middle" opacity="0" id="t2b">5·12·13</text>
+        <text x="250" y="135" font-family="Space Mono" font-size="11" fill="var(--muted)" text-anchor="middle" opacity="0" id="t2c">25+144=169</text>
+        <text x="250" y="170" font-family="Space Mono" font-size="11" fill="var(--green)" text-anchor="middle" opacity="0" id="t2d">×2 → 10·24·26</text>
+
+        <rect id="t3" x="350" y="20" width="140" height="230" rx="10" fill="rgba(0,255,157,0.06)" stroke="var(--green)" stroke-width="1" opacity="0"/>
+        <text x="420" y="55" font-family="Space Mono" font-size="11" fill="var(--green)" text-anchor="middle" opacity="0" id="t3a">ADVANCED</text>
+        <text x="420" y="100" font-family="Space Mono" font-size="28" fill="var(--gold)" text-anchor="middle" opacity="0" id="t3b">8·15·17</text>
+        <text x="420" y="135" font-family="Space Mono" font-size="11" fill="var(--muted)" text-anchor="middle" opacity="0" id="t3c">64+225=289</text>
+        <text x="420" y="170" font-family="Space Mono" font-size="11" fill="var(--green)" text-anchor="middle" opacity="0" id="t3d">×2 → 16·30·34</text>
+      </svg>
+      <div class="slide-body-text" id="s5-text">
+        Memorising these triples lets you solve problems <span class="hl-gold">instantly</span> — no calculation needed!
+      </div>
+    </div>
+
+    <!-- SLIDE 6: Summary -->
+    <div class="slide" id="s6">
+      <div class="slide-headline" id="s6-hl">LESSON 3 COMPLETE</div>
+      <div style="font-size:36px;font-weight:800;color:var(--green);opacity:0;text-align:center;" id="s6-title">⚡ Hypotenuse Mastered!</div>
+      <div class="formula-box" id="s6-formula">c = √(a² + b²)</div>
+      <div class="steps-col" style="margin-top:14px; width:420px;">
+        <div class="step-box" id="s6s1" style="opacity:0;"><span class="step-num">✓</span><div class="step-text">Write formula: c² = a² + b²</div></div>
+        <div class="step-box" id="s6s2" style="opacity:0;"><span class="step-num">✓</span><div class="step-text">Square both legs and add</div></div>
+        <div class="step-box" id="s6s3" style="opacity:0;"><span class="step-num">✓</span><div class="step-text">Take square root for c</div></div>
+        <div class="step-box" id="s6s4" style="opacity:0;"><span class="step-num">✓</span><div class="step-text">Recognise Pythagorean triples for speed</div></div>
+      </div>
+    </div>
+
+  </div><!-- /stage -->
+
+  <!-- SIGN PANEL -->
+  <div class="sign-panel">
+    <div class="sign-label">🤟 Sign Language</div>
+
+    <div class="interpreter-box">
+      <svg class="avatar-svg" id="avatar-svg" viewBox="0 0 120 160">
+        <!-- Body -->
+        <ellipse cx="60" cy="55" rx="18" ry="22" fill="#f5c09a"/>
+        <!-- Shirt -->
+        <rect x="38" y="75" width="44" height="55" rx="8" fill="#1a3a5c"/>
+        <!-- Left arm -->
+        <g id="arm-L" style="transform-origin:42px 82px">
+          <line x1="42" y1="82" x2="22" y2="115" stroke="#1a3a5c" stroke-width="10" stroke-linecap="round"/>
+          <!-- Hand L -->
+          <g id="hand-L" style="transform-origin:22px 115px">
+            <ellipse cx="22" cy="120" rx="9" ry="7" fill="#f5c09a"/>
+            <line x1="16" y1="116" x2="13" y2="110" stroke="#f5c09a" stroke-width="3" stroke-linecap="round" id="fL1"/>
+            <line x1="20" y1="113" x2="18" y2="107" stroke="#f5c09a" stroke-width="3" stroke-linecap="round" id="fL2"/>
+            <line x1="24" y1="113" x2="23" y2="107" stroke="#f5c09a" stroke-width="3" stroke-linecap="round" id="fL3"/>
+            <line x1="28" y1="115" x2="28" y2="110" stroke="#f5c09a" stroke-width="3" stroke-linecap="round" id="fL4"/>
+          </g>
+        </g>
+        <!-- Right arm -->
+        <g id="arm-R" style="transform-origin:78px 82px">
+          <line x1="78" y1="82" x2="98" y2="115" stroke="#1a3a5c" stroke-width="10" stroke-linecap="round"/>
+          <!-- Hand R -->
+          <g id="hand-R" style="transform-origin:98px 115px">
+            <ellipse cx="98" cy="120" rx="9" ry="7" fill="#f5c09a"/>
+            <line x1="92" y1="116" x2="89" y2="110" stroke="#f5c09a" stroke-width="3" stroke-linecap="round" id="fR1"/>
+            <line x1="96" y1="113" x2="94" y2="107" stroke="#f5c09a" stroke-width="3" stroke-linecap="round" id="fR2"/>
+            <line x1="100" y1="113" x2="99" y2="107" stroke="#f5c09a" stroke-width="3" stroke-linecap="round" id="fR3"/>
+            <line x1="104" y1="115" x2="104" y2="110" stroke="#f5c09a" stroke-width="3" stroke-linecap="round" id="fR4"/>
+          </g>
+        </g>
+        <!-- Face -->
+        <ellipse cx="60" cy="52" rx="9" ry="10" fill="#f5c09a"/>
+        <circle cx="57" cy="50" r="1.5" fill="#333"/>
+        <circle cx="63" cy="50" r="1.5" fill="#333"/>
+        <path id="mouth" d="M 56 56 Q 60 59 64 56" stroke="#333" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <!-- Hair -->
+        <ellipse cx="60" cy="42" rx="10" ry="8" fill="#3a1a00"/>
+      </svg>
+    </div>
+
+    <div class="sign-word" id="sign-word">▶ HYPOTENUSE</div>
+
+    <div class="sign-glossary">
+      <h4>Sign Glossary</h4>
+      <div class="sign-term"><span>Hypotenuse</span><span>Diagonal slide</span></div>
+      <div class="sign-term"><span>Square root</span><span>√ root finger</span></div>
+      <div class="sign-term"><span>Calculate</span><span>Fists rotate</span></div>
+      <div class="sign-term"><span>Answer</span><span>Index to palm</span></div>
+      <div class="sign-term"><span>Formula</span><span>F-handshape</span></div>
+      <div class="sign-term"><span>Triple</span><span>3-hand bounce</span></div>
+      <div class="sign-term"><span>Longest</span><span>Stretch apart</span></div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- BOTTOM BAR -->
+<div class="bottombar">
+  <div class="slide-counter">SLIDE <span id="slideNum">1</span> / 6</div>
+  <div class="caption-bar" id="caption">Lesson 3: Finding hypotenuse using c = √(a² + b²).</div>
+  <div class="slide-dots">
+    <div class="dot active" onclick="goSlide(0)"></div>
+    <div class="dot" onclick="goSlide(1)"></div>
+    <div class="dot" onclick="goSlide(2)"></div>
+    <div class="dot" onclick="goSlide(3)"></div>
+    <div class="dot" onclick="goSlide(4)"></div>
+    <div class="dot" onclick="goSlide(5)"></div>
+  </div>
+</div>
+
+<script>
+const CAPTIONS = [
+  "Lesson 3: Finding hypotenuse — given legs a and b, find c = √(a² + b²).",
+  "The formula: c² = a² + b². Legs a and b, hypotenuse c is always longest.",
+  "Example 1: a=3, b=4. Step by step: 9+16=25, so c = √25 = 5.",
+  "Example 2: a=5, b=12. We get 25+144=169, so c = √169 = 13.",
+  "Pythagorean triples — memorise 3·4·5, 5·12·13, 8·15·17 for instant answers!",
+  "Lesson 3 complete! You can now calculate any hypotenuse quickly."
+];
+const SIGN_WORDS = [
+  "HYPOTENUSE","FORMULA · c=√(a²+b²)","CALCULATE · STEP 1-4",
+  "EXAMPLE 2 · 5·12·13","TRIPLES · MEMORISE","COMPLETE ✓"
+];
+const DURATIONS = [4000,6500,8000,8000,7000,5000];
+
+let currentSlide = 0, paused = false, timer = null;
+
+function updateProgress() {
+  document.getElementById('progressFill').style.width = ((currentSlide+1)/6*100)+'%';
+  document.getElementById('slideNum').innerText = currentSlide+1;
+  document.getElementById('caption').innerText = CAPTIONS[currentSlide];
+  document.getElementById('sign-word').innerText = '▶ '+SIGN_WORDS[currentSlide];
+  document.querySelectorAll('.dot').forEach((d,i)=>{
+    d.className='dot';
+    if(i<currentSlide) d.classList.add('done');
+    if(i===currentSlide) d.classList.add('active');
+  });
+}
+
+function showSlide(idx) {
+  document.querySelectorAll('.slide').forEach(s=>{
+    gsap.to(s,{opacity:0,duration:0.4});
+    s.classList.remove('active');
+  });
+  setTimeout(()=>{
+    const sl = document.getElementById('s'+(idx+1));
+    sl.classList.add('active');
+    gsap.to(sl,{opacity:1,duration:0.5});
+    animateSlide(idx);
+    updateProgress();
+    animateAvatar(idx);
+  },450);
+}
+
+function animateSlide(idx) {
+  const tl = gsap.timeline();
+
+  if(idx===0){
+    tl.to('#s1-hl',{opacity:1,duration:0.5})
+      .to('#s1-title',{opacity:1,y:0,duration:0.7},0.3)
+      .from('#s1-title',{y:30},0.3)
+      .to('#s1-sub',{opacity:1,duration:0.6},1.0)
+      .to('#s1-formula',{opacity:1,duration:0.6},1.6);
+  }
+  if(idx===1){
+    tl.to('#s2-hl',{opacity:1,duration:0.5})
+      .to('#tri2',{opacity:1,duration:0.5},0.3)
+      .to('#leg-a',{strokeDashoffset:0,duration:0.7},0.6)
+      .to('#la2',{opacity:1,duration:0.3},1.2)
+      .to('#leg-b',{strokeDashoffset:0,duration:0.8},1.4)
+      .to('#lb2',{opacity:1,duration:0.3},2.0)
+      .to('#hyp2',{strokeDashoffset:0,duration:1.0},2.2)
+      .to('#lc2',{opacity:1,duration:0.3},3.0)
+      .to('#ra2',{opacity:1,duration:0.3},3.2)
+      .to('#arc2',{opacity:1,duration:0.4},3.4)
+      .to('#ang2',{opacity:1,duration:0.3},3.6)
+      .to('#fbox2',{opacity:1,duration:0.5},4.0)
+      .to('#ftxt2a',{opacity:1,duration:0.4},4.3)
+      .to('#ftxt2b',{opacity:1,duration:0.4},4.6)
+      .to('#s2-text',{opacity:1,duration:0.5},5.0);
+  }
+  if(idx===2){
+    tl.to('#s3-hl',{opacity:1,duration:0.5})
+      .to('#tri3',{opacity:1,duration:0.5},0.3)
+      .to('#hyp3-lbl',{opacity:1,duration:0.4},0.5)
+      .to('#step31',{opacity:1,x:0,duration:0.5},0.8).from('#step31',{x:-20},0.8)
+      .to('#hyp3',{strokeDashoffset:0,duration:1.0},1.2)
+      .to('#step32',{opacity:1,x:0,duration:0.5},1.6).from('#step32',{x:-20},1.6)
+      .to('#step33',{opacity:1,x:0,duration:0.5},2.4).from('#step33',{x:-20},2.4)
+      .to('#step34',{opacity:1,x:0,duration:0.5},3.2).from('#step34',{x:-20},3.2);
+  }
+  if(idx===3){
+    tl.to('#s4-hl',{opacity:1,duration:0.5})
+      .to('#hyp4-lbl',{opacity:1,duration:0.4},0.5)
+      .to('#step41',{opacity:1,x:0,duration:0.5},0.8).from('#step41',{x:-20},0.8)
+      .to('#hyp4',{strokeDashoffset:0,duration:1.0},1.0)
+      .to('#step42',{opacity:1,x:0,duration:0.5},1.6).from('#step42',{x:-20},1.6)
+      .to('#step43',{opacity:1,x:0,duration:0.5},2.4).from('#step43',{x:-20},2.4)
+      .to('#step44',{opacity:1,x:0,duration:0.5},3.2).from('#step44',{x:-20},3.2);
+  }
+  if(idx===4){
+    tl.to('#s5-hl',{opacity:1,duration:0.5})
+      .to(['#t1','#t1a','#t1b','#t1c','#t1d','#t1e'],{opacity:1,duration:0.5},0.4)
+      .to(['#t2','#t2a','#t2b','#t2c','#t2d'],{opacity:1,duration:0.5},1.2)
+      .to(['#t3','#t3a','#t3b','#t3c','#t3d'],{opacity:1,duration:0.5},2.0)
+      .to('#s5-text',{opacity:1,duration:0.5},3.0);
+  }
+  if(idx===5){
+    tl.to('#s6-hl',{opacity:1,duration:0.5})
+      .to('#s6-title',{opacity:1,duration:0.6},0.3)
+      .to('#s6-formula',{opacity:1,duration:0.5},1.0)
+      .to('#s6s1',{opacity:1,duration:0.4},1.5)
+      .to('#s6s2',{opacity:1,duration:0.4},1.9)
+      .to('#s6s3',{opacity:1,duration:0.4},2.3)
+      .to('#s6s4',{opacity:1,duration:0.4},2.7);
+  }
+}
+
+// Sign language avatar animations
+const SIGNS = [
+  // slide 1: hands form C shape (hypotenuse)
+  ()=>{ sign_diagonal_slide(); },
+  // slide 2: formula — fists show squaring
+  ()=>{ sign_fists_square(); },
+  // slide 3: step by step count
+  ()=>{ sign_counting(); },
+  // slide 4: same
+  ()=>{ sign_counting(); },
+  // slide 5: triple bounce
+  ()=>{ sign_triple(); },
+  // slide 6: thumbs up complete
+  ()=>{ sign_complete(); }
+];
+
+function animateAvatar(idx){ SIGNS[idx](); }
+
+function armPos(lRot,rRot,lY,rY,dur=0.6){
+  gsap.to('#arm-L',{rotation:lRot,y:lY||0,duration:dur,ease:'power2.out'});
+  gsap.to('#arm-R',{rotation:rRot,y:rY||0,duration:dur,ease:'power2.out',delay:0.1});
+}
+
+function sign_diagonal_slide(){
+  // both arms slide diagonally — hypotenuse gesture
+  armPos(-20,20,0,0);
+  setTimeout(()=>armPos(-40,40,-5,5,0.8),900);
+  setTimeout(()=>armPos(-20,20,0,0,0.6),1800);
+}
+function sign_fists_square(){
+  // fists rotating — calculate
+  armPos(-15,15);
+  setTimeout(()=>{
+    gsap.to('#arm-L',{rotation:-30,duration:0.4,yoyo:true,repeat:3});
+    gsap.to('#arm-R',{rotation:30,duration:0.4,yoyo:true,repeat:3,delay:0.2});
+  },500);
+}
+function sign_counting(){
+  // count fingers on left: 1,2,3,4
+  armPos(-25,10);
+  let d=300;
+  [['#fL1','#fL2','#fL3','#fL4']].forEach(fingers=>{
+    fingers.forEach((f,i)=>{
+      setTimeout(()=>gsap.to(f,{attr:{y1:'-=8'},duration:0.2,yoyo:true,repeat:1}),d+i*350);
+    });
+  });
+}
+function sign_triple(){
+  // 3-hand bounce
+  armPos(-20,20);
+  setTimeout(()=>{
+    gsap.to('#arm-L',{y:-10,duration:0.3,yoyo:true,repeat:5});
+    gsap.to('#arm-R',{y:-10,duration:0.3,yoyo:true,repeat:5,delay:0.15});
+  },400);
+}
+function sign_complete(){
+  // both arms up — celebration
+  armPos(-50,-50,-15,-15,0.7);
+  setTimeout(()=>{
+    gsap.to('#mouth',{attr:{d:'M 54 54 Q 60 62 66 54'},duration:0.4});
+  },300);
+  setTimeout(()=>armPos(-30,-30,0,0,0.6),1500);
+}
+
+function scheduleNext(){
+  clearTimeout(timer);
+  if(!paused && currentSlide<5){
+    timer=setTimeout(()=>{ currentSlide++; showSlide(currentSlide); scheduleNext(); },DURATIONS[currentSlide]);
+  }
+}
+function nextSlide(){ if(currentSlide<5){ currentSlide++; showSlide(currentSlide); scheduleNext(); } }
+function prevSlide(){ if(currentSlide>0){ currentSlide--; showSlide(currentSlide); scheduleNext(); } }
+function goSlide(i){ currentSlide=i; showSlide(i); scheduleNext(); }
+function togglePause(){
+  paused=!paused;
+  document.getElementById('pauseBtn').innerText=paused?'▶ PLAY':'⏸ PAUSE';
+  if(!paused) scheduleNext(); else clearTimeout(timer);
+}
+
+showSlide(0);
+scheduleNext();
+</script>
+</body>
+</html>

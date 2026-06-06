@@ -1,0 +1,61 @@
+<svg width="320" height="180" viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg2-3d" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e3a8a;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#2d3748;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#475569;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="formula-3d" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f97316;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow-3d">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-opacity="0.5"/>
+    </filter>
+    <filter id="glow-3d">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background with depth -->
+  <rect width="320" height="180" fill="url(#bg2-3d)"/>
+  
+  <!-- Mathematical pattern -->
+  <pattern id="math-pattern-3d" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+    <circle cx="20" cy="20" r="1.5" fill="rgba(245,158,11,0.2)"/>
+    <circle cx="10" cy="10" r="1" fill="rgba(245,158,11,0.1)"/>
+    <circle cx="30" cy="30" r="1" fill="rgba(245,158,11,0.1)"/>
+  </pattern>
+  <rect width="320" height="180" fill="url(#math-pattern-3d)"/>
+  
+  <!-- 3D Formula box -->
+  <g transform="translate(160, 85)" filter="url(#shadow-3d)">
+    <!-- Back faces -->
+    <rect x="-75" y="-28" width="150" height="56" fill="rgba(37,99,235,0.3)" rx="12"/>
+    <rect x="-70" y="-23" width="140" height="46" fill="rgba(37,99,235,0.5)" rx="10"/>
+    
+    <!-- Front face -->
+    <rect x="-65" y="-18" width="130" height="36" fill="url(#formula-3d)" rx="8" filter="url(#glow-3d)"/>
+    
+    <!-- Formula text -->
+    <text x="0" y="0" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="18" font-weight="bold" filter="url(#glow-3d)">a² + b² = c²</text>
+    <text x="0" y="18" text-anchor="middle" fill="#fef3c7" font-family="Arial, sans-serif" font-size="11" font-weight="600">Pythagoras</text>
+  </g>
+  
+  <!-- Floating mathematical symbols -->
+  <g opacity="0.7">
+    <text x="50" y="40" fill="#f59e0b" font-family="Arial, sans-serif" font-size="16" font-weight="bold" filter="url(#glow-3d)">α</text>
+    <text x="270" y="60" fill="#f59e0b" font-family="Arial, sans-serif" font-size="16" font-weight="bold" filter="url(#glow-3d)">β</text>
+    <text x="80" y="130" fill="#f59e0b" font-family="Arial, sans-serif" font-size="16" font-weight="bold" filter="url(#glow-3d)">π</text>
+    <text x="240" y="110" fill="#f59e0b" font-family="Arial, sans-serif" font-size="16" font-weight="bold" filter="url(#glow-3d)">θ</text>
+  </g>
+  
+  <!-- Title section with 3D effect -->
+  <rect x="10" y="140" width="300" height="35" fill="rgba(30,41,59,0.9)" rx="8" filter="url(#shadow-3d)"/>
+  <text x="160" y="158" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="20" font-weight="bold">Lesson 2</text>
+  <text x="160" y="174" text-anchor="middle" fill="#f59e0b" font-family="Arial, sans-serif" font-size="11">Formula Concept</text>
+</svg>

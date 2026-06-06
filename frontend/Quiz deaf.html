@@ -1,0 +1,249 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SimplexMath - Visual Quiz</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+html, body { height: 100vh; overflow: hidden; }
+.quiz-page { position: fixed; inset: 0; z-index: 1; display: flex; flex-direction: column; padding-top: 64px; }
+.progress-strip { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 2.5rem 0; flex-shrink: 0; }
+.progress-label { font-size: 0.92rem; color: var(--muted-text); }
+.q-counter { font-family: Outfit, sans-serif; font-weight: 700; font-size: 1rem; color: var(--deaf); }
+.progress-bar { height: 6px; background: rgba(255,255,255,0.05); border-radius: 100px; overflow: hidden; margin: 0.5rem 2.5rem 0; flex-shrink: 0; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--deaf), #3b82f6); border-radius: 100px; transition: width 0.6s ease; }
+.quiz-body { flex: 1; display: flex; align-items: center; justify-content: center; padding: 1rem 2rem; overflow: hidden; }
+.quiz-card { width: 100%; max-width: 860px; background: linear-gradient(180deg, rgba(5,24,46,0.97), rgba(6,38,72,0.95)); border: 1px solid rgba(168,85,247,0.15); border-radius: 28px; padding: 2rem 2.5rem; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+.q-type-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1rem; background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.2); border-radius: 100px; font-size: 0.85rem; font-weight: 500; color: var(--deaf); margin-bottom: 1rem; }
+.question-text { font-family: Outfit, sans-serif; font-size: clamp(1.4rem, 2.5vw, 2rem); font-weight: 800; line-height: 1.3; margin-bottom: 0.4rem; }
+.question-sub { color: var(--muted-text); font-size: 0.95rem; margin-bottom: 1.1rem; }
+.options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 1rem; }
+.option-btn { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 1rem 1.2rem; text-align: left; cursor: pointer; color: #fff; font-family: Inter, sans-serif; font-size: 1.05rem; transition: all 0.2s; display: flex; align-items: center; gap: 0.85rem; }
+.option-btn:hover { background: rgba(168,85,247,0.06); border-color: rgba(168,85,247,0.3); transform: translateY(-2px); }
+.option-btn.selected { background: rgba(168,85,247,0.1); border-color: var(--deaf); }
+.option-btn.correct { background: rgba(16,185,129,0.12); border-color: var(--green); }
+.option-btn.wrong { background: rgba(239,68,68,0.12); border-color: var(--red); }
+.opt-key { width: 38px; height: 38px; border-radius: 10px; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; font-family: Outfit, sans-serif; font-size: 1rem; font-weight: 700; flex-shrink: 0; }
+.option-btn.selected .opt-key { background: var(--deaf); color: #fff; }
+.option-btn.correct .opt-key { background: var(--green); color: #000; }
+.option-btn.wrong .opt-key { background: var(--red); color: #fff; }
+.feedback-box { border-radius: 14px; padding: 1rem 1.3rem; display: none; }
+.feedback-box.correct { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); }
+.feedback-box.wrong { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); }
+.feedback-title { font-family: Outfit, sans-serif; font-weight: 700; font-size: 1.1rem; margin-bottom: 0.3rem; }
+.feedback-box.correct .feedback-title { color: var(--green); }
+.feedback-box.wrong .feedback-title { color: var(--red); }
+.feedback-text { font-size: 0.92rem; color: var(--muted-text); }
+.btn-row { display: flex; gap: 0.8rem; margin-top: 0.8rem; }
+.btn { padding: 0.8rem 1.4rem; border-radius: 100px; border: none; cursor: pointer; font-family: Outfit, sans-serif; font-weight: 700; font-size: 0.9rem; transition: all 0.2s; }
+.btn-primary { background: linear-gradient(135deg, var(--deaf), #3b82f6); color: #fff; box-shadow: 0 4px 20px rgba(168,85,247,0.3); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(168,85,247,0.4); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.score-panel { display: none; text-align: center; padding: 1.8rem 2.5rem; }
+.score-circle { width: 170px; height: 170px; border-radius: 50%; background: conic-gradient(var(--deaf) 0%, var(--deaf) calc(var(--score)*1%), rgba(255,255,255,0.05) calc(var(--score)*1%)); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; position: relative; }
+.score-circle::before { content: ''; position: absolute; inset: 12px; background: var(--bg-color); border-radius: 50%; }
+.score-num { position: relative; z-index: 1; font-family: Outfit, sans-serif; font-size: 2.8rem; font-weight: 800; }
+.level-badge { display: inline-block; padding: 0.55rem 2rem; border-radius: 100px; font-family: Outfit, sans-serif; font-weight: 700; font-size: 1.05rem; margin-bottom: 1.2rem; }
+.level-slow { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.4); }
+.level-advanced { background: rgba(16,185,129,0.15); color: var(--green); border: 1px solid rgba(16,185,129,0.4); }
+.result-title { font-size: 2rem; margin-bottom: 0.7rem; }
+.result-desc { color: var(--muted-text); font-size: 1rem; margin-bottom: 1.5rem; }
+.profile-wrap { position: relative; }
+.profile-btn { display: flex; align-items: center; gap: 0.6rem; padding: 0.4rem 0.8rem 0.4rem 0.4rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 100px; cursor: pointer; color: #fff; font-family: Inter, sans-serif; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.profile-btn:hover { background: rgba(255,255,255,0.09); }
+.profile-avatar { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, var(--blind), var(--deaf)); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; color: #000; flex-shrink: 0; overflow: hidden; }
+.profile-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.profile-chevron { font-size: 0.65rem; color: #64748b; transition: transform 0.2s; }
+.profile-wrap.open .profile-chevron { transform: rotate(180deg); }
+.profile-dropdown { display: none; position: absolute; top: calc(100% + 10px); right: 0; width: 240px; background: #0f0f14; border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); overflow: hidden; z-index: 200; }
+.profile-wrap.open .profile-dropdown { display: block; }
+.profile-info { padding: 1.1rem 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; gap: 0.8rem; }
+.profile-info-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--blind), var(--deaf)); display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; color: #000; flex-shrink: 0; overflow: hidden; }
+.profile-info-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.profile-info-text { min-width: 0; }
+.profile-info-name { font-family: Outfit, sans-serif; font-weight: 700; font-size: 0.92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.profile-info-email { font-size: 0.75rem; color: #475569; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dropdown-menu { padding: 0.5rem; }
+.dropdown-item { display: flex; align-items: center; gap: 0.7rem; padding: 0.65rem 0.8rem; border-radius: 10px; font-size: 0.88rem; color: #94a3b8; cursor: pointer; transition: all 0.15s; text-decoration: none; border: none; background: none; width: 100%; text-align: left; font-family: Inter, sans-serif; }
+.dropdown-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+.dropdown-item.danger:hover { background: rgba(239,68,68,0.08); color: #f87171; }
+.dropdown-icon { font-size: 1rem; width: 20px; text-align: center; }
+.dropdown-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 0.4rem 0.5rem; }
+@media(max-width:640px) { .options-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="orb orb-cyan"></div>
+<div class="orb orb-purple"></div>
+<nav>
+  <a href="index.html" class="nav-logo">SimplexMath</a>
+  <div class="nav-badge text-purple border-purple">Visual Mode</div>
+  <div class="profile-wrap" id="profileWrap">
+    <button class="profile-btn" onclick="toggleProfile()">
+      <div class="profile-avatar" id="navAvatar">?</div>
+      <span id="userName"></span>
+      <span class="profile-chevron">v</span>
+    </button>
+    <div class="profile-dropdown">
+      <div class="profile-info">
+        <div class="profile-info-avatar" id="dropAvatar">?</div>
+        <div class="profile-info-text">
+          <div class="profile-info-name" id="dropName">Loading...</div>
+          <div class="profile-info-email" id="dropEmail"></div>
+        </div>
+      </div>
+      <div class="dropdown-menu">
+        <a href="profile.html" class="dropdown-item"><span class="dropdown-icon">👤</span> My Profile</a>
+        <a href="profile.html" class="dropdown-item"><span class="dropdown-icon">📊</span> My Progress</a>
+        <div class="dropdown-divider"></div>
+        <button class="dropdown-item danger" onclick="handleLogout()"><span class="dropdown-icon">🚪</span> Logout</button>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="quiz-page">
+  <div class="progress-strip">
+    <span class="progress-label">Visual Diagnostic Quiz</span>
+    <span class="q-counter" id="q-counter">Question 1 of 5</span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  <div class="quiz-body">
+    <div class="quiz-card" id="quiz-card">
+      <div class="q-type-badge">Visual Question</div>
+      <div class="question-text" id="question-text">Loading...</div>
+      <div class="question-sub" id="question-sub"></div>
+      <div class="options-grid" id="options-grid"></div>
+      <div class="feedback-box" id="feedback-box">
+        <div class="feedback-title" id="feedback-title"></div>
+        <div class="feedback-text" id="feedback-text"></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="submit-btn" disabled onclick="submitAnswer()">Submit Answer</button>
+      </div>
+    </div>
+    <div class="quiz-card score-panel" id="score-panel">
+      <div class="score-circle" id="score-circle" style="--score:60">
+        <div class="score-num" id="score-num">3/5</div>
+      </div>
+      <div style="display:flex;justify-content:center;gap:3rem;margin-bottom:1.5rem;color:var(--muted-text);font-size:1rem;">
+        <div>Avg Time: <span id="time-stat" class="text-purple" style="font-weight:700;">--</span></div>
+        <div>Max Streak: <span id="streak-stat" class="text-purple" style="font-weight:700;">--</span></div>
+      </div>
+      <div class="level-badge" id="level-badge">Slow Learner</div>
+      <h3 class="result-title" id="result-title"></h3>
+      <p class="result-desc" id="result-desc"></p>
+      <button class="btn btn-primary" onclick="goToSection()" style="padding:0.9rem 2.5rem;">Start My Visual Learning</button>
+    </div>
+  </div>
+</div>
+<script>
+const questions=[
+  {text:"What is 9 squared?",sub:"Compute 9 times 9.",options:{A:"27",B:"81",C:"18",D:"72"},correct:"B",explanation:"9 squared equals 9 times 9 equals 81."},
+  {text:"What is the square root of 49?",sub:"Find the number that when multiplied by itself gives 49.",options:{A:"5",B:"7",C:"9",D:"14"},correct:"B",explanation:"The square root of 49 is 7 because 7 times 7 equals 49."},
+  {text:"Compute 4 squared plus 3 squared.",sub:"Find each square then add the results.",options:{A:"26",B:"25",C:"19",D:"21"},correct:"B",explanation:"4 squared is 16 and 3 squared is 9. 16 plus 9 equals 25."},
+  {text:"If x equals 6 and y equals 8, what is x squared plus y squared?",sub:"Square each value then add.",options:{A:"110",B:"100",C:"90",D:"64"},correct:"B",explanation:"6 squared is 36 and 8 squared is 64. 36 plus 64 equals 100."},
+  {text:"What is the square root of 100?",sub:"Find the number whose square is 100.",options:{A:"8",B:"10",C:"12",D:"20"},correct:"B",explanation:"The square root of 100 is 10 because 10 times 10 equals 100."}
+];
+let currentQ=0,scores=[],selectedAnswer=null,answered=false,questionStartTime=0,responseTimes=[],correctStreak=0,currentStreak=0;
+window.onload=()=>loadQuestion(0);
+function loadQuestion(idx){
+  const q=questions[idx];answered=false;selectedAnswer=null;questionStartTime=Date.now();
+  document.getElementById('question-text').textContent=q.text;
+  document.getElementById('question-sub').textContent=q.sub;
+  document.getElementById('q-counter').textContent='Question '+(idx+1)+' of '+questions.length;
+  document.getElementById('progress-fill').style.width=(idx/questions.length*100)+'%';
+  document.getElementById('feedback-box').style.display='none';
+  document.getElementById('submit-btn').disabled=true;
+  document.getElementById('submit-btn').textContent='Submit Answer';
+  document.getElementById('submit-btn').onclick=submitAnswer;
+  const grid=document.getElementById('options-grid');
+  grid.innerHTML=Object.entries(q.options).map(([k,v])=>
+    '<button class="option-btn" data-key="'+k+'" onclick="selectOption(this,\''+k+'\')"><span class="opt-key">'+k+'</span><span>'+v+'</span></button>'
+  ).join('');
+}
+function selectOption(btn,key){
+  if(answered)return;
+  selectedAnswer=key;
+  document.querySelectorAll('.option-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('submit-btn').disabled=false;
+}
+function submitAnswer(){
+  if(!selectedAnswer||answered)return;
+  answered=true;
+  responseTimes.push((Date.now()-questionStartTime)/1000);
+  const q=questions[currentQ];
+  const correct=selectedAnswer===q.correct;
+  scores.push(correct?1:0);
+  if(correct){currentStreak++;if(currentStreak>correctStreak)correctStreak=currentStreak;}else{currentStreak=0;}
+  document.querySelectorAll('.option-btn').forEach(b=>{
+    b.disabled=true;
+    if(b.dataset.key===q.correct)b.classList.add('correct');
+    if(b.dataset.key===selectedAnswer&&!correct)b.classList.add('wrong');
+  });
+  const fb=document.getElementById('feedback-box');
+  fb.className=correct?'feedback-box correct':'feedback-box wrong';
+  document.getElementById('feedback-title').textContent=correct?'Correct!':'Wrong Answer';
+  document.getElementById('feedback-text').textContent=q.explanation;
+  fb.style.display='block';
+  const btn=document.getElementById('submit-btn');
+  btn.textContent=currentQ<questions.length-1?'Next Question':'See My Results';
+  btn.onclick=nextQuestion;btn.disabled=false;
+}
+function nextQuestion(){currentQ++;if(currentQ>=questions.length){showResults();return;}loadQuestion(currentQ);}
+async function showResults(){
+  const total=scores.reduce((a,b)=>a+b,0);
+  const pct=Math.round(total/scores.length*100);
+  const avgTime=responseTimes.length?responseTimes.reduce((a,b)=>a+b,0)/responseTimes.length:0;
+  let level,lClass,title,desc,route;
+  try{
+    const r=await fetch('http://127.0.0.1:5000/predict',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({math_score:pct,reading_score:pct,writing_score:pct,score_percentage:pct})});
+    if(r.ok){const d=await r.json();
+      if(d.level==='Advanced Learner'){level='Advanced Learner';lClass='level-advanced';route='deaf_advanced_lessons.html';title='Excellent! Outstanding!';desc='You are identified as an Advanced Learner. You will receive concise visual explanations and challenging conceptual questions.';}
+      else{level='Slow Learner';lClass='level-slow';route='deaf_slow_lessons.html';title='Keep Going - You Can Do It!';desc='The system has identified you as a Slow Learner. You will receive step-by-step visual lessons and illustrated guidance.';}
+    }else throw new Error();
+  }catch(e){
+    if(pct>60){level='Advanced Learner';lClass='level-advanced';route='deaf_advanced_lessons.html';title='Excellent! Outstanding!';desc='You are identified as an Advanced Learner.';}
+    else{level='Slow Learner';lClass='level-slow';route='deaf_slow_lessons.html';title='Keep Going - You Can Do It!';desc='The system has identified you as a Slow Learner.';}
+  }
+  localStorage.setItem('deafLevel',level);localStorage.setItem('deafScore',pct);localStorage.setItem('deafRoute',route);localStorage.setItem('lastQuizType','deaf');
+  document.getElementById('quiz-card').style.display='none';
+  document.getElementById('score-circle').style.setProperty('--score',pct);
+  document.getElementById('score-num').innerHTML=total+'/<span style="font-size:1.5rem;color:rgba(255,255,255,0.5);">5</span>';
+  document.getElementById('time-stat').textContent=avgTime.toFixed(1)+'s';
+  document.getElementById('streak-stat').textContent=correctStreak;
+  document.getElementById('level-badge').textContent=level;
+  document.getElementById('level-badge').className='level-badge '+lClass;
+  document.getElementById('result-title').textContent=title;
+  document.getElementById('result-desc').textContent=desc;
+  document.getElementById('progress-fill').style.width='100%';
+  document.getElementById('score-panel').style.display='block';
+}
+function goToSection(){
+  const route=localStorage.getItem('deafRoute')||'deaf_slow_lessons.html';
+  window.location.href=route;
+}
+</script>
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+const cfg={apiKey:"AIzaSyDS8hshom-srb-96anMSjr2wpq2_1A9Nk0",authDomain:"simplemath-20773.firebaseapp.com",projectId:"simplemath-20773",storageBucket:"simplemath-20773.firebasestorage.app",messagingSenderId:"798012087027",appId:"1:798012087027:web:8db7ea6b21cea5fdacb586"};
+const auth=getAuth(initializeApp(cfg));
+onAuthStateChanged(auth,(user)=>{
+  if(!user){window.location.href='login.html';return;}
+  const name=user.displayName||'User';
+  const initials=name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('userName').textContent=name.split(' ')[0];
+  document.getElementById('dropName').textContent=name;
+  document.getElementById('dropEmail').textContent=user.email||'';
+  if(user.photoURL){document.getElementById('navAvatar').innerHTML='<img src="'+user.photoURL+'"/>';document.getElementById('dropAvatar').innerHTML='<img src="'+user.photoURL+'"/>';}
+  else{document.getElementById('navAvatar').textContent=initials;document.getElementById('dropAvatar').textContent=initials;}
+  localStorage.setItem('userUID',user.uid);
+});
+window.toggleProfile=()=>document.getElementById('profileWrap').classList.toggle('open');
+window.handleLogout=async()=>{await signOut(auth);window.location.href='login.html';};
+document.addEventListener('click',(e)=>{const w=document.getElementById('profileWrap');if(w&&!w.contains(e.target))w.classList.remove('open');});
+</script>
+</body>
+</html>

@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SimplexMath — Inclusive Learning Platform</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+/* Page Specific adjustments */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 8rem 2rem 4rem;
+}
+.hero h1 {
+  font-size: clamp(3rem, 7vw, 6rem);
+  margin-bottom: 1.5rem;
+}
+.hero-sub {
+  font-size: clamp(1.1rem, 2vw, 1.25rem);
+  color: var(--muted-text);
+  max-width: 600px;
+  margin-bottom: 3rem;
+}
+.hero-actions {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.section {
+  padding: 8rem 2rem;
+}
+.section-title {
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  text-align: center;
+  margin-bottom: 1rem;
+}
+.section-sub {
+  text-align: center;
+  color: var(--muted-text);
+  font-size: 1.1rem;
+  margin-bottom: 4rem;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.card-icon {
+  width: 60px; height: 60px;
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+  background: rgba(255,255,255,0.05);
+}
+.card-icon.blind { color: var(--blind); border: 1px solid rgba(0,240,255,0.2); }
+.card-icon.deaf { color: var(--deaf); border: 1px solid rgba(168,85,247,0.2); }
+
+.card-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.4rem;
+  margin-bottom: 0.8rem;
+}
+.card-desc {
+  color: var(--muted-text);
+  font-size: 0.95rem;
+}
+
+/* Profile dropdown */
+.profile-wrap {
+  position: relative;
+}
+.profile-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.8rem 0.4rem 0.4rem;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 100px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+.profile-btn:hover {
+  background: rgba(255,255,255,0.09);
+  border-color: rgba(255,255,255,0.15);
+}
+.profile-avatar {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--blind), var(--deaf));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #000;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.profile-avatar img {
+  width: 100%; height: 100%; object-fit: cover; border-radius: 50%;
+}
+.profile-chevron {
+  font-size: 0.65rem;
+  color: #64748b;
+  transition: transform 0.2s;
+}
+.profile-wrap.open .profile-chevron { transform: rotate(180deg); }
+
+.profile-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 240px;
+  background: #0f0f14;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+  overflow: hidden;
+  z-index: 200;
+}
+.profile-wrap.open .profile-dropdown { display: block; }
+
+.profile-info {
+  padding: 1.1rem 1.2rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+.profile-info-avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--blind), var(--deaf));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; font-weight: 700; color: #000;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.profile-info-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.profile-info-text { min-width: 0; }
+.profile-info-name {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 0.92rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.profile-info-email {
+  font-size: 0.75rem;
+  color: #475569;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.dropdown-menu { padding: 0.5rem; }
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.65rem 0.8rem;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-decoration: none;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: 'Inter', sans-serif;
+}
+.dropdown-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+.dropdown-item.danger:hover { background: rgba(239,68,68,0.08); color: #f87171; }
+.dropdown-icon { font-size: 1rem; width: 20px; text-align: center; }
+.dropdown-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 0.4rem 0.5rem; }
+.steps-flow {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.step-item {
+  flex: 1;
+  min-width: 200px;
+  text-align: center;
+  padding: 2rem 1rem;
+}
+.step-num {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--blind), var(--deaf));
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800; font-size: 1.2rem;
+  margin: 0 auto 1.5rem;
+  box-shadow: 0 0 30px rgba(168, 85, 247, 0.4);
+}
+.step-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+</style>
+</head>
+<body style="visibility:hidden;">
+
+<div class="orb orb-cyan"></div>
+<div class="orb orb-purple"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">SimplexMath</a>
+  <div class="nav-links">
+    <a href="#how">How It Works</a>
+    <a href="disability.html">Pathways</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:1rem;">
+    <div class="profile-wrap" id="profileWrap">
+      <button class="profile-btn" onclick="toggleProfile()">
+        <div class="profile-avatar" id="navAvatar">?</div>
+        <span id="userName"></span>
+        <span class="profile-chevron">▼</span>
+      </button>
+      <div class="profile-dropdown">
+        <div class="profile-info">
+          <div class="profile-info-avatar" id="dropAvatar">?</div>
+          <div class="profile-info-text">
+            <div class="profile-info-name" id="dropName">—</div>
+            <div class="profile-info-email" id="dropEmail">—</div>
+          </div>
+        </div>
+        <div class="dropdown-menu">
+          <a href="profile.html" class="dropdown-item">
+            <span class="dropdown-icon">👤</span> My Profile
+          </a>
+          <a href="profile.html" class="dropdown-item">
+            <span class="dropdown-icon">📊</span> My Progress
+          </a>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item danger" onclick="handleLogout()">
+            <span class="dropdown-icon">🚪</span> Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="layout-wrapper">
+  <!-- HERO -->
+  <section class="hero">
+    <h1 class="animate-fade-up">
+      Learning Without <br>
+      <span class="text-gradient">Barriers</span>
+    </h1>
+    <p class="hero-sub animate-fade-up delay-100">
+      An AI-powered adaptive learning platform for the Pythagorean theorem, designed for blind and deaf students with deeply personalized learning experiences.
+    </p>
+    <div class="hero-actions animate-fade-up delay-200">
+      <a href="learn.html" class="btn btn-primary">
+        Start Learning
+      </a>
+      <a href="#how" class="btn btn-outline">
+        See How It Works
+      </a>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section" id="features">
+    <h2 class="section-title reveal">Built for Every Learner</h2>
+    <p class="section-sub reveal">Two complete pathways, one powerful platform.</p>
+    
+    <div class="cards-grid">
+      <div class="glass-card reveal delay-100">
+        <div class="card-icon blind">🎧</div>
+        <h3 class="card-title">Voice-Powered Learning</h3>
+        <p class="card-desc">Blind students interact entirely through voice. Questions read aloud, answers captured by precision speech recognition.</p>
+      </div>
+
+      <div class="glass-card reveal delay-200">
+        <div class="card-icon deaf">🎬</div>
+        <h3 class="card-title">Visual Animation</h3>
+        <p class="card-desc">Deaf students get rich animated explanations, step-by-step visual breakdowns, and emoji-powered feedback loops.</p>
+      </div>
+
+      <div class="glass-card reveal delay-300">
+        <div class="card-icon blind">🤖</div>
+        <h3 class="card-title">AI Classification</h3>
+        <p class="card-desc">Advanced ML models trained on real datasets classify learners as Slow, Average, or Advanced in real-time.</p>
+      </div>
+
+      <div class="glass-card reveal delay-100">
+        <div class="card-icon deaf">📈</div>
+        <h3 class="card-title">Real-Time Progression</h3>
+        <p class="card-desc">Every quiz attempt, response time, and streak is tracked visually to build personalized progression dashboards.</p>
+      </div>
+      
+      <div class="glass-card reveal delay-200">
+        <div class="card-icon blind">🔊</div>
+        <h3 class="card-title">Dynamic Audio Details</h3>
+        <p class="card-desc">AI adjusts the depth of the audio explanations dynamically based on how quickly you are mastering the content.</p>
+      </div>
+
+      <div class="glass-card reveal delay-300">
+        <div class="card-icon deaf">🎯</div>
+        <h3 class="card-title">Adaptive Quiz Engine</h3>
+        <p class="card-desc">Difficulty adapts to you. Mistakes trigger powerful hints, while streaks unlock more challenging questions.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section" id="how">
+    <h2 class="section-title reveal">How It Works</h2>
+    <p class="section-sub reveal">From arrival to completely personalized learning routes.</p>
+    
+    <div class="steps-flow">
+      <div class="glass-card step-item reveal delay-100">
+        <div class="step-num">1</div>
+        <h3 class="step-title">Land & Learn</h3>
+        <p class="card-desc">Explore the Pythagorean theorem fundamentals.</p>
+      </div>
+      <div class="glass-card step-item reveal delay-200">
+        <div class="step-num">2</div>
+        <h3 class="step-title">Choose Path</h3>
+        <p class="card-desc">Select Blind (Audio) or Deaf (Visual) mode.</p>
+      </div>
+      <div class="glass-card step-item reveal delay-300">
+        <div class="step-num">3</div>
+        <h3 class="step-title">Take Quiz</h3>
+        <p class="card-desc">Complete a short baseline diagnostic quiz.</p>
+      </div>
+      <div class="glass-card step-item reveal delay-400">
+        <div class="step-num">4</div>
+        <h3 class="step-title">AI Adapts</h3>
+        <p class="card-desc">The AI predicts your learner level instantly and routes you to your content.</p>
+      </div>
+    </div>
+  </section>
+  
+  <footer style="padding: 4rem 2rem; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; color: var(--muted-text);">
+    <div class="nav-logo" style="margin-bottom: 1rem; font-size: 2rem;">SimplexMath</div>
+    <p>&copy; 2026 Enhanced Learning Platform. All rights reserved.</p>
+  </footer>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey:            "AIzaSyDS8hshom-srb-96anMSjr2wpq2_1A9Nk0",
+    authDomain:        "simplemath-20773.firebaseapp.com",
+    projectId:         "simplemath-20773",
+    storageBucket:     "simplemath-20773.firebasestorage.app",
+    messagingSenderId: "798012087027",
+    appId:             "1:798012087027:web:8db7ea6b21cea5fdacb586",
+    measurementId:     "G-R2VPGFS1W7"
+  };
+
+  const app  = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  // If not logged in → redirect to login page
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      window.location.href = 'login.html';
+    } else {
+      document.body.style.visibility = 'visible';
+
+      // Populate profile
+      const name  = user.displayName || 'User';
+      const email = user.email || '';
+      const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2);
+
+      // Save UID to localStorage for quiz pages
+      localStorage.setItem('userUID', user.uid);
+      localStorage.setItem('userName', name);
+
+      document.getElementById('userName').textContent   = name.split(' ')[0];
+      document.getElementById('dropName').textContent   = name;
+      document.getElementById('dropEmail').textContent  = email;
+
+      // Avatar — use photo if Google login, else initials
+      if (user.photoURL) {
+        document.getElementById('navAvatar').innerHTML  = `<img src="${user.photoURL}" alt="avatar"/>`;
+        document.getElementById('dropAvatar').innerHTML = `<img src="${user.photoURL}" alt="avatar"/>`;
+      } else {
+        document.getElementById('navAvatar').textContent  = initials;
+        document.getElementById('dropAvatar').textContent = initials;
+      }
+
+      // Scroll reveal
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+      }, {threshold: 0.1, rootMargin:'0px 0px -50px 0px'});
+      document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    }
+  });
+
+  // Toggle dropdown
+  window.toggleProfile = function() {
+    document.getElementById('profileWrap').classList.toggle('open');
+  };
+  // Close on outside click
+  document.addEventListener('click', (e) => {
+    const wrap = document.getElementById('profileWrap');
+    if (wrap && !wrap.contains(e.target)) wrap.classList.remove('open');
+  });
+
+  // Logout
+  window.handleLogout = async function() {
+    const { signOut } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+    await signOut(auth);
+    window.location.href = 'login.html';
+  };
+</script>
+</body>
+</html>

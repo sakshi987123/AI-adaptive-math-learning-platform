@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SimplexMath — Visual Lessons</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    body { background: #081b2e; color: #f8fafc; font-family: 'Inter', sans-serif; }
+
+    .page { max-width: 1100px; margin: 0 auto; padding: 5rem 2rem 3rem; }
+
+    /* ── HEADER ── */
+    .page-header { margin-bottom: 2rem; }
+    .page-header h1 { font-family: 'Outfit', sans-serif; font-size: clamp(1.8rem, 3vw, 2.6rem); font-weight: 800; margin-bottom: 0.4rem; }
+    .page-header p { color: #64748b; font-size: 0.95rem; }
+
+    /* ── VIDEO PLAYER MODAL ── */
+    .video-modal {
+      display: none; position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+      align-items: center; justify-content: center;
+    }
+    .video-modal.open { display: flex; }
+    .modal-inner {
+      width: 90%; max-width: 860px;
+      background: #0a0f1e; border: 1px solid rgba(168,85,247,0.2);
+      border-radius: 24px; overflow: hidden;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+    }
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .modal-title { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1rem; }
+    .modal-close {
+      width: 32px; height: 32px; border-radius: 50%; border: none; cursor: pointer;
+      background: rgba(255,255,255,0.08); color: #94a3b8; font-size: 1.1rem;
+      display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+    }
+    .modal-close:hover { background: rgba(239,68,68,0.2); color: #f87171; }
+    .video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; }
+    .video-wrapper video {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: #000;
+    }
+
+    /* ── VIDEO GRID ── */
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.2rem;
+    }
+
+    .video-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(168,85,247,0.15);
+      border-radius: 20px; overflow: hidden; cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .video-card:hover {
+      border-color: rgba(168,85,247,0.5);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(168,85,247,0.15);
+    }
+
+    /* Thumbnail */
+    .video-thumb {
+      position: relative; padding-bottom: 56.25%; background: #0a0f1e;
+      overflow: hidden;
+    }
+    .video-thumb video {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      object-fit: cover; pointer-events: none;
+    }
+    .video-thumb-placeholder {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, rgba(168,85,247,0.15), rgba(59,130,246,0.1));
+      gap: 0.5rem;
+    }
+    .thumb-icon { font-size: 2.5rem; }
+    .thumb-label { font-size: 0.75rem; color: #64748b; }
+    .coming-soon-badge {
+      position: absolute; top: 0.6rem; right: 0.6rem;
+      padding: 0.2rem 0.6rem; border-radius: 100px;
+      background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.3);
+      color: #fbbf24; font-size: 0.68rem; font-weight: 600;
+    }
+
+    /* Play overlay */
+    .play-overlay {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.3); opacity: 0; transition: opacity 0.2s;
+    }
+    .video-card:hover .play-overlay { opacity: 1; }
+    .play-btn-circle {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: rgba(168,85,247,0.9);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; box-shadow: 0 0 30px rgba(168,85,247,0.5);
+    }
+
+    /* Card info */
+    .video-info { padding: 1rem 1.2rem; }
+    .video-num {
+      font-size: 0.72rem; font-weight: 600; color: var(--deaf);
+      text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.3rem;
+    }
+    .video-title { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1rem; margin-bottom: 0.3rem; }
+    .video-desc { font-size: 0.82rem; color: #64748b; line-height: 1.5; }
+
+    /* ── NEXT STEP ── */
+    .next-section {
+      margin-top: 2.5rem; padding: 1.5rem 2rem;
+      background: rgba(168,85,247,0.06); border: 1px solid rgba(168,85,247,0.2);
+      border-radius: 20px; display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 1rem;
+    }
+    .next-section h3 { font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .next-section p { color: #64748b; font-size: 0.88rem; }
+    .btn-next {
+      padding: 0.85rem 2rem; border-radius: 100px; border: none; cursor: pointer;
+      background: linear-gradient(135deg, var(--deaf), #3b82f6); color: #fff;
+      font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 0.95rem;
+      box-shadow: 0 4px 20px rgba(168,85,247,0.3); transition: all 0.2s; white-space: nowrap;
+    }
+    .btn-next:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(168,85,247,0.4); }
+  </style>
+</head>
+<body>
+<div class="orb orb-purple" style="opacity:0.2;"></div>
+<div class="orb orb-cyan" style="opacity:0.15;"></div>
+
+<nav>
+  <a href="index.html" class="nav-logo">SimplexMath</a>
+  <div class="nav-badge text-purple border-purple">🎬 Visual Lessons</div>
+  <a href="Quiz deaf.html" class="btn btn-outline" style="padding:0.5rem 1.2rem;font-size:0.9rem;">← Back to Quiz</a>
+</nav>
+
+<!-- VIDEO MODAL -->
+<div class="video-modal" id="videoModal" onclick="closeModal(event)">
+  <div class="modal-inner" id="modalInner">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Video Lesson</div>
+      <button class="modal-close" onclick="closeVideoModal()">✕</button>
+    </div>
+    <!-- Video player -->
+    <div class="video-wrapper" id="videoWrapper">
+      <video id="modalVideo" controls autoplay>
+        <source id="modalVideoSrc" src="" type="video/mp4"/>
+        Your browser does not support the video tag.
+      </video>
+      <div id="videoNotReady" style="display:none;position:absolute;inset:0;background:#0a0f1e;align-items:center;justify-content:center;flex-direction:column;gap:1rem;text-align:center;padding:2rem;">
+        <div style="font-size:3rem;">🎬</div>
+        <div style="font-family:'Outfit',sans-serif;font-size:1.2rem;font-weight:700;">Video Coming Soon</div>
+        <div style="color:#64748b;font-size:0.88rem;">Place your video file in the <code style="background:rgba(255,255,255,0.08);padding:0.2rem 0.5rem;border-radius:6px;">frontend/videos/</code> folder.</div>
+      </div>
+    </div>
+    <!-- Iframe for animated lessons -->
+    <div id="iframeWrapper" style="display:none;">
+      <iframe id="modalIframe" src="" style="width:100%;height:80vh;border:none;display:block;" allowfullscreen></iframe>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+  <div class="page-header animate-fade-up">
+    <h1>🎬 Visual Lesson Library</h1>
+    <p>Click any video below to watch. Each lesson covers a key concept of the Pythagoras theorem.</p>
+  </div>
+
+  <!-- VIDEO GRID -->
+  <div class="video-grid animate-fade-up delay-100" id="videoGrid">
+
+    <!-- VIDEO 1 -->
+    <div class="video-card" onclick="playVideo('videos/lesson1.mp4', 'Lesson 1 — Introduction to Right Triangles')">
+      <div class="video-thumb">
+        <div class="video-thumb-placeholder">
+          <div class="thumb-icon">📐</div>
+          <div class="thumb-label">Lesson 1</div>
+        </div>
+        <span class="coming-soon-badge">📹 Video</span>
+        <div class="play-overlay"><div class="play-btn-circle">▶</div></div>
+      </div>
+      <div class="video-info">
+        <div class="video-num">Lesson 1</div>
+        <div class="video-title">Introduction to Right Triangles</div>
+        <div class="video-desc">Learn what a right triangle is, identify the legs and hypotenuse with visual diagrams.</div>
+      </div>
+    </div>
+
+    <!-- VIDEO 2 -->
+    <div class="video-card" onclick="playVideo('videos/lesson2.mp4', 'Lesson 2 — The Pythagoras Formula')">
+      <div class="video-thumb">
+        <div class="video-thumb-placeholder">
+          <div class="thumb-icon">🧮</div>
+          <div class="thumb-label">Lesson 2</div>
+        </div>
+        <span class="coming-soon-badge">📹 Video</span>
+        <div class="play-overlay"><div class="play-btn-circle">▶</div></div>
+      </div>
+      <div class="video-info">
+        <div class="video-num">Lesson 2</div>
+        <div class="video-title">The Pythagoras Formula</div>
+        <div class="video-desc">Understand a² + b² = c² with animated step-by-step visual proof.</div>
+      </div>
+    </div>
+
+    <!-- VIDEO 3 -->
+    <div class="video-card" onclick="playVideo('videos/lesson3.mp4', 'Lesson 3 — Finding the Hypotenuse')">
+      <div class="video-thumb">
+        <div class="video-thumb-placeholder">
+          <div class="thumb-icon">📏</div>
+          <div class="thumb-label">Lesson 3</div>
+        </div>
+        <span class="coming-soon-badge">📹 Video</span>
+        <div class="play-overlay"><div class="play-btn-circle">▶</div></div>
+      </div>
+      <div class="video-info">
+        <div class="video-num">Lesson 3</div>
+        <div class="video-title">Finding the Hypotenuse</div>
+        <div class="video-desc">Solve for c using the 3-4-5 triangle example with animated calculations.</div>
+      </div>
+    </div>
+
+    <!-- VIDEO 4 -->
+    <div class="video-card" onclick="playVideo('videos/lesson4.mp4', 'Lesson 4 — Finding a Missing Leg')">
+      <div class="video-thumb">
+        <div class="video-thumb-placeholder">
+          <div class="thumb-icon">🔍</div>
+          <div class="thumb-label">Lesson 4</div>
+        </div>
+        <span class="coming-soon-badge">📹 Video</span>
+        <div class="play-overlay"><div class="play-btn-circle">▶</div></div>
+      </div>
+      <div class="video-info">
+        <div class="video-num">Lesson 4</div>
+        <div class="video-title">Finding a Missing Leg</div>
+        <div class="video-desc">Rearrange the formula to find a or b when c is known.</div>
+      </div>
+    </div>
+
+    <!-- VIDEO 5 -->
+    <div class="video-card" onclick="playVideo('videos/lesson5.mp4', 'Lesson 5 — Real-World Applications')">
+      <div class="video-thumb">
+        <div class="video-thumb-placeholder">
+          <div class="thumb-icon">🏗️</div>
+          <div class="thumb-label">Lesson 5</div>
+        </div>
+        <span class="coming-soon-badge">📹 Video</span>
+        <div class="play-overlay"><div class="play-btn-circle">▶</div></div>
+      </div>
+      <div class="video-info">
+        <div class="video-num">Lesson 5</div>
+        <div class="video-title">Real-World Applications</div>
+        <div class="video-desc">See how Pythagoras is used in construction, navigation, and everyday problems.</div>
+      </div>
+    </div>
+
+  </div><!-- end video-grid -->
+
+  <!-- NEXT STEP -->
+  <div class="next-section animate-fade-up delay-200">
+    <div>
+      <h3>Ready to test your knowledge?</h3>
+      <p>After watching the lessons, take the evaluation quiz to see how much you've learned.</p>
+    </div>
+    <button class="btn-next" onclick="goToEvaluation()">Take Evaluation Quiz →</button>
+  </div>
+
+</div><!-- end page -->
+
+<script>
+  // Play an MP4 video file
+  function playVideo(src, title) {
+    document.getElementById('videoWrapper').style.display = 'block';
+    document.getElementById('iframeWrapper').style.display = 'none';
+    document.getElementById('modalIframe').src = '';
+    document.getElementById('modalVideoSrc').src = src;
+    document.getElementById('modalTitle').textContent = title;
+    const video = document.getElementById('modalVideo');
+    video.style.display = 'block';
+    document.getElementById('videoNotReady').style.display = 'none';
+    video.load();
+    video.play().catch(() => {
+      video.style.display = 'none';
+      document.getElementById('videoNotReady').style.display = 'flex';
+    });
+    document.getElementById('videoModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  // Play an animated HTML lesson in an iframe
+  function playLesson(src, title) {
+    document.getElementById('videoWrapper').style.display = 'none';
+    document.getElementById('iframeWrapper').style.display = 'block';
+    document.getElementById('modalVideo').pause();
+    document.getElementById('modalIframe').src = src;
+    document.getElementById('modalTitle').textContent = title;
+    // Make modal wider for the lesson
+    document.getElementById('modalInner').style.maxWidth = '1100px';
+    document.getElementById('videoModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeVideoModal() {
+    const video = document.getElementById('modalVideo');
+    video.pause();
+    video.currentTime = 0;
+    document.getElementById('modalIframe').src = '';
+    document.getElementById('modalInner').style.maxWidth = '860px';
+    document.getElementById('videoModal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function closeModal(e) {
+    // Close if clicking the backdrop (not the inner modal)
+    if (e.target === document.getElementById('videoModal')) {
+      closeVideoModal();
+    }
+  }
+
+  function goToEvaluation() {
+    const level = localStorage.getItem('deafLevel') || 'Slow Learner';
+    if (level === 'Advanced Learner') {
+      window.location.href = 'deaf_advanced_test.html';
+    } else {
+      window.location.href = 'deaf_slow_test.html';
+    }
+  }
+
+  // Keyboard ESC to close
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeVideoModal();
+  });
+</script>
+</body>
+</html>

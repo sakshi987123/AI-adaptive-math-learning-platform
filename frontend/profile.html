@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SimplexMath — My Profile</title>
+<link rel="stylesheet" href="styles.css"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  body { overflow-x: hidden; }
+  .profile-page { max-width: 1200px; margin: 0 auto; padding: 5rem 2rem 4rem; }
+
+  /* ── DOWNLOAD BTN ── */
+  .btn-download {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.6rem 1.3rem; border-radius: 100px; border: none; cursor: pointer;
+    background: linear-gradient(135deg, var(--blind), var(--deaf));
+    color: #fff; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 0.88rem;
+    box-shadow: 0 4px 16px rgba(0,240,255,0.2); transition: all 0.2s; margin-left: auto;
+  }
+  .btn-download:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,240,255,0.3); }
+
+  /* ── PRINT ── */
+  @media print {
+    body { background:#fff !important; color:#000 !important; }
+    nav,.btn-download,.orb { display:none !important; }
+    .profile-page { padding:1rem !important; max-width:100% !important; }
+    .profile-header,.stat-card,.section-card { background:#f8f9fa !important; border:1px solid #dee2e6 !important; box-shadow:none !important; color:#000 !important; }
+    .loading-state { display:none !important; }
+  }
+
+  /* ── HEADER ── */
+  .profile-header {
+    display: flex; align-items: center; gap: 1.5rem;
+    background: var(--surface); border: 1px solid var(--card-border);
+    border-radius: 24px; padding: 1.8rem 2rem; margin-bottom: 2rem;
+    backdrop-filter: blur(16px);
+  }
+  .profile-avatar-lg {
+    width: 80px; height: 80px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--blind), var(--deaf));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; font-weight: 800; color: #000; overflow: hidden;
+    box-shadow: 0 0 0 4px rgba(0,240,255,0.2);
+  }
+  .profile-avatar-lg img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+  .profile-info h1 { font-family:'Outfit',sans-serif; font-size:1.7rem; font-weight:800; margin-bottom:0.2rem; }
+  .profile-info p { color:var(--muted-text); font-size:0.9rem; }
+  .profile-badges { display:flex; gap:0.6rem; margin-top:0.6rem; flex-wrap:wrap; }
+  .badge-pill { padding:0.25rem 0.8rem; border-radius:100px; font-size:0.75rem; font-weight:600; }
+  .badge-level { background:rgba(0,240,255,0.1); border:1px solid rgba(0,240,255,0.3); color:var(--blind); }
+  .badge-behavior-improving { background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); color:#10b981; }
+  .badge-behavior-struggling { background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); color:#ef4444; }
+  .badge-behavior-stable { background:rgba(251,191,36,0.1); border:1px solid rgba(251,191,36,0.3); color:var(--gold); }
+  .badge-disability { background:rgba(168,85,247,0.1); border:1px solid rgba(168,85,247,0.3); color:var(--deaf); }
+
+  /* ── STATS ROW ── */
+  .stats-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:1rem; margin-bottom:2rem; }
+  .stat-card {
+    background:var(--surface); border:1px solid var(--card-border);
+    border-radius:20px; padding:1.2rem 1rem; text-align:center;
+    backdrop-filter:blur(16px); transition: transform 0.2s, box-shadow 0.2s;
+    position: relative; overflow: hidden;
+  }
+  .stat-card:hover { transform:translateY(-3px); box-shadow:0 12px 32px rgba(0,0,0,0.3); }
+  .stat-card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:3px;
+    background: var(--accent-color, linear-gradient(90deg, var(--blind), var(--deaf)));
+    border-radius:20px 20px 0 0;
+  }
+  .stat-card .val { font-family:'Outfit',sans-serif; font-size:2rem; font-weight:800; }
+  .stat-card .lbl { font-size:0.78rem; color:var(--muted-text); margin-top:0.2rem; }
+  .stat-card .trend { font-size:0.72rem; margin-top:0.4rem; }
+
+  /* ── SECTION CARDS ── */
+  .main-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:2rem; }
+  .full-width { grid-column:1 / -1; }
+  .col-3 { grid-template-columns:1fr 1fr 1fr; }
+
+  .section-card {
+    background:var(--surface); border:1px solid var(--card-border);
+    border-radius:20px; padding:1.5rem; backdrop-filter:blur(16px);
+  }
+  .section-title {
+    font-family:'Outfit',sans-serif; font-size:1rem; font-weight:700;
+    margin-bottom:1.2rem; display:flex; align-items:center; gap:0.5rem;
+  }
+  .section-subtitle { font-size:0.72rem; color:var(--muted-text); font-weight:400; margin-left:auto; }
+
+  /* ── CHART CONTAINERS ── */
+  .chart-wrap { position:relative; width:100%; }
+  .chart-wrap canvas { max-width:100%; }
+
+  /* ── TOPIC BARS ── */
+  .topic-row { margin-bottom:0.9rem; }
+  .topic-row-header { display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:0.35rem; }
+  .topic-row-name { color:#e2e8f0; }
+  .topic-row-pct { font-weight:700; }
+  .topic-bar-bg { height:9px; background:rgba(255,255,255,0.06); border-radius:100px; overflow:hidden; }
+  .topic-bar-fill { height:100%; border-radius:100px; transition:width 1.2s cubic-bezier(.4,0,.2,1); }
+
+  /* ── BEHAVIOR TIMELINE ── */
+  .behavior-timeline { display:flex; gap:0.4rem; flex-wrap:wrap; }
+  .behavior-dot {
+    width:34px; height:34px; border-radius:9px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:0.8rem; font-weight:700; cursor:default;
+    transition: transform 0.15s;
+  }
+  .behavior-dot:hover { transform:scale(1.15); }
+  .beh-improving { background:rgba(16,185,129,0.2); color:#10b981; border:1px solid rgba(16,185,129,0.3); }
+  .beh-struggling { background:rgba(239,68,68,0.2); color:#ef4444; border:1px solid rgba(239,68,68,0.3); }
+  .beh-stable { background:rgba(251,191,36,0.2); color:var(--gold); border:1px solid rgba(251,191,36,0.3); }
+
+  /* ── SESSION HISTORY ── */
+  .session-item {
+    display:flex; align-items:center; gap:1rem;
+    padding:0.85rem 0; border-bottom:1px solid rgba(255,255,255,0.05);
+    transition: background 0.15s; border-radius:8px; padding-left:0.4rem;
+  }
+  .session-item:last-child { border-bottom:none; }
+  .session-item:hover { background:rgba(255,255,255,0.03); }
+  .session-icon { width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
+  .session-icon.blind { background:rgba(0,240,255,0.1); border:1px solid rgba(0,240,255,0.2); }
+  .session-icon.deaf  { background:rgba(168,85,247,0.1); border:1px solid rgba(168,85,247,0.2); }
+  .session-info { flex:1; min-width:0; }
+  .session-info .title { font-size:0.88rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .session-info .sub { font-size:0.75rem; color:var(--muted-text); }
+  .session-score { font-family:'Outfit',sans-serif; font-size:1.15rem; font-weight:800; }
+
+  /* ── AI REC BOX ── */
+  .ai-rec-box {
+    background:rgba(168,85,247,0.06); border:1px solid rgba(168,85,247,0.2);
+    border-radius:14px; padding:1rem 1.2rem; font-size:0.88rem;
+    line-height:1.7; color:#e2e8f0; margin-bottom:1rem;
+  }
+  .next-step { display:flex; align-items:flex-start; gap:0.6rem; padding:0.5rem 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.84rem; color:#cbd5e1; }
+  .next-step:last-child { border-bottom:none; }
+  .step-icon { font-size:1rem; flex-shrink:0; }
+
+  /* ── SCORE RING ── */
+  .ring-wrap { display:flex; align-items:center; justify-content:center; gap:2rem; flex-wrap:wrap; }
+  .ring-label { text-align:center; }
+  .ring-label .rl-val { font-family:'Outfit',sans-serif; font-size:1.6rem; font-weight:800; }
+  .ring-label .rl-lbl { font-size:0.75rem; color:var(--muted-text); }
+
+  /* ── HEATMAP ── */
+  .heatmap-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+  .hm-cell {
+    aspect-ratio:1; border-radius:4px; background:rgba(255,255,255,0.04);
+    transition:transform 0.15s;
+  }
+  .hm-cell:hover { transform:scale(1.3); }
+  .hm-0 { background:rgba(255,255,255,0.04); }
+  .hm-1 { background:rgba(0,240,255,0.2); }
+  .hm-2 { background:rgba(0,240,255,0.45); }
+  .hm-3 { background:rgba(0,240,255,0.75); }
+  .hm-4 { background:rgba(0,240,255,1); }
+
+  /* ── LOADING ── */
+  .loading-state { text-align:center; padding:3rem; color:var(--muted-text); }
+  .loading-spinner { width:40px; height:40px; border:3px solid rgba(255,255,255,0.1); border-top-color:var(--blind); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 1rem; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  /* ── DIVIDER LABEL ── */
+  .dash-section-label {
+    font-family:'Outfit',sans-serif; font-size:0.72rem; font-weight:700;
+    letter-spacing:0.12em; text-transform:uppercase; color:var(--muted-text);
+    margin:2rem 0 1rem; display:flex; align-items:center; gap:0.8rem;
+  }
+  .dash-section-label::after { content:''; flex:1; height:1px; background:rgba(255,255,255,0.07); }
+
+  @media(max-width:900px) {
+    .stats-grid { grid-template-columns:repeat(3,1fr); }
+    .main-grid { grid-template-columns:1fr; }
+    .col-3 { grid-template-columns:1fr; }
+  }
+  @media(max-width:560px) {
+    .stats-grid { grid-template-columns:repeat(2,1fr); }
+  }
+</style>
+</head>
+<body style="visibility:hidden;">
+<div class="orb orb-cyan"></div>
+<div class="orb orb-purple"></div>
+
+<nav>
+  <a href="index.html" class="nav-logo">SimplexMath</a>
+  <div style="display:flex;align-items:center;gap:1rem;">
+    <a href="index.html" class="btn btn-outline" style="padding:0.5rem 1.2rem;font-size:0.9rem;">← Home</a>
+  </div>
+</nav>
+
+<div class="layout-wrapper profile-page" id="profile-page">
+  <div class="loading-state" id="loading-state">
+    <div class="loading-spinner"></div>
+    <p>Loading your profile...</p>
+  </div>
+</div>
+
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDS8hshom-srb-96anMSjr2wpq2_1A9Nk0",
+  authDomain: "simplemath-20773.firebaseapp.com",
+  projectId: "simplemath-20773",
+  storageBucket: "simplemath-20773.firebasestorage.app",
+  messagingSenderId: "798012087027",
+  appId: "1:798012087027:web:8db7ea6b21cea5fdacb586"
+};
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const API  = 'http://127.0.0.1:5000';
+
+// Chart instances — kept so we can destroy before re-render
+const charts = {};
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) { window.location.href = 'login.html'; return; }
+  document.body.style.visibility = 'visible';
+
+  await fetch(`${API}/user/save`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      uid: user.uid,
+      name: user.displayName || 'Student',
+      email: user.email || '',
+      photo_url: user.photoURL || '',
+      disability_type: localStorage.getItem('lastQuizType') || 'blind'
+    })
+  }).catch(() => {});
+
+  try {
+    const res  = await fetch(`${API}/user/profile?uid=${user.uid}`);
+    const data = await res.json();
+    renderProfile(user, data);
+  } catch (e) {
+    renderNoData(user);
+  }
+});
+
+/* ── helpers ── */
+function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
+function behColor(b) { return b === 'improving' ? '#10b981' : b === 'struggling' ? '#ef4444' : '#fbbf24'; }
+function scoreColor(v) { return v >= 80 ? '#10b981' : v >= 50 ? '#f59e0b' : '#ef4444'; }
+function destroyChart(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
+
+function renderNoData(user) {
+  document.getElementById('loading-state').style.display = 'block';
+  document.getElementById('loading-state').innerHTML = `
+    <div style="text-align:center;padding:3rem;">
+      <div style="font-size:3rem;margin-bottom:1rem;">📊</div>
+      <h2 style="font-family:'Outfit',sans-serif;margin-bottom:0.5rem;">No quiz data yet</h2>
+      <p style="color:var(--muted-text);margin-bottom:1.5rem;">Complete a quiz to see your learning profile here.</p>
+      <a href="Learn.html" class="btn btn-primary">Start Learning →</a>
+    </div>`;
+}
+
+function renderProfile(user, data) {
+  const { progress = {}, recent_sessions = [] } = data;
+  const scoreHistory    = progress.score_history    || [];
+  const behaviorHistory = progress.behavior_history || [];
+  const weakTopicsHist  = progress.weak_topics_history || {};
+  const persistentWeak  = progress.persistent_weak_topics || [];
+  const behavior        = progress.overall_behavior || 'stable';
+  const weightedScore   = progress.weighted_score   || 0;
+  const overallAccuracy = progress.overall_accuracy || 0;
+  const totalSessions   = progress.total_sessions   || 0;
+  const bestScore       = progress.best_score       || 0;
+  const latestScore     = progress.latest_score     || 0;
+
+  const topicLabels = {
+    theorem:    'Theorem',
+    hypotenuse: 'Hypotenuse',
+    calculation:'Calculation',
+    square_root:'Square Root',
+    application:'Application'
+  };
+  const topicLabelsFull = {
+    theorem:    'Understanding the Theorem',
+    hypotenuse: 'Identifying the Hypotenuse',
+    calculation:'Squaring and Adding',
+    square_root:'Finding Square Roots',
+    application:'Real-World Application'
+  };
+
+  // Build topic accuracy
+  const topicAccuracy = {};
+  for (const [topic, count] of Object.entries(weakTopicsHist)) {
+    topicAccuracy[topic] = Math.max(0, Math.round((1 - count / Math.max(totalSessions, 1)) * 100));
+  }
+
+  const latestImprovement = recent_sessions[0]?.improvement_text || '';
+  const nextStepMap = {
+    theorem:    { icon: '📖', text: 'Re-read the Pythagoras theorem definition in your lesson.' },
+    hypotenuse: { icon: '📐', text: 'Practice identifying the hypotenuse in different triangles.' },
+    calculation:{ icon: '🧮', text: 'Practice squaring numbers: 3²=9, 4²=16, 5²=25.' },
+    square_root:{ icon: '√',  text: 'Learn common square roots: √25=5, √100=10, √144=12.' },
+    application:{ icon: '🏗️', text: 'Try solving real-world problems using the theorem.' }
+  };
+  const nextSteps = persistentWeak.length > 0
+    ? persistentWeak.map(t => nextStepMap[t]).filter(Boolean)
+    : [{ icon: '🚀', text: 'Great progress! Try the advanced evaluation quiz.' }];
+
+  const behaviorClass = { improving: 'badge-behavior-improving', struggling: 'badge-behavior-struggling', stable: 'badge-behavior-stable' };
+  const behaviorIcon  = { improving: '📈', struggling: '📉', stable: '➡️' };
+
+  // Streak from recent sessions
+  let streak = 0;
+  for (const s of recent_sessions) {
+    if ((s.accuracy || 0) >= 60) streak++; else break;
+  }
+
+  // Avg response time
+  const avgTime = recent_sessions.length
+    ? (recent_sessions.reduce((a, s) => a + (s.avg_response_time || 0), 0) / recent_sessions.length).toFixed(1)
+    : '--';
+
+  document.getElementById('profile-page').innerHTML = `
+
+    <!-- ── HEADER ── -->
+    <div class="profile-header animate-fade-up">
+      <div class="profile-avatar-lg">
+        ${user.photoURL ? `<img src="${user.photoURL}" alt="avatar"/>` : cap(user.displayName || 'S')[0]}
+      </div>
+      <div class="profile-info">
+        <h1>${user.displayName || 'Student'}</h1>
+        <p>${user.email || ''}</p>
+        <div class="profile-badges">
+          <span class="badge-pill badge-level">🎓 ${cap(progress.current_level || 'slow')} Learner</span>
+          <span class="badge-pill ${behaviorClass[behavior]}">${behaviorIcon[behavior]} ${cap(behavior)}</span>
+          <span class="badge-pill badge-disability">🎧 ${cap(data.user?.disability_type || 'blind')} Mode</span>
+        </div>
+      </div>
+      <button class="btn-download" onclick="downloadReport()">⬇ Download Report</button>
+    </div>
+
+    <!-- ── KPI STATS ── -->
+    <div class="stats-grid animate-fade-up delay-100">
+      <div class="stat-card" style="--accent-color:var(--blind)">
+        <div class="val" style="color:var(--blind)">${totalSessions}</div>
+        <div class="lbl">Total Sessions</div>
+        <div class="trend" style="color:var(--muted-text)">📅 All time</div>
+      </div>
+      <div class="stat-card" style="--accent-color:#10b981">
+        <div class="val" style="color:#10b981">${overallAccuracy}%</div>
+        <div class="lbl">Overall Accuracy</div>
+        <div class="trend" style="color:var(--muted-text)">✅ Correct rate</div>
+      </div>
+      <div class="stat-card" style="--accent-color:#f59e0b">
+        <div class="val" style="color:#f59e0b">${weightedScore}%</div>
+        <div class="lbl">Weighted Score</div>
+        <div class="trend" style="color:var(--muted-text)">⚖️ Recency bias</div>
+      </div>
+      <div class="stat-card" style="--accent-color:var(--deaf)">
+        <div class="val" style="color:var(--deaf)">${bestScore}%</div>
+        <div class="lbl">Best Score</div>
+        <div class="trend" style="color:var(--muted-text)">🏆 Personal best</div>
+      </div>
+      <div class="stat-card" style="--accent-color:#f472b6">
+        <div class="val" style="color:#f472b6">${streak}</div>
+        <div class="lbl">Current Streak</div>
+        <div class="trend" style="color:var(--muted-text)">🔥 Sessions ≥60%</div>
+      </div>
+    </div>
+
+    <!-- ── SECTION LABEL: CHARTS ── -->
+    <div class="dash-section-label">📊 Visual Analytics Dashboard</div>
+
+    <!-- ── ROW 1: Line chart + Doughnut ── -->
+    <div class="main-grid animate-fade-up delay-200">
+
+      <!-- Score Progress Line Chart -->
+      <div class="section-card">
+        <div class="section-title">
+          📈 Score Progress Over Time
+          <span class="section-subtitle">Chart.js Line</span>
+        </div>
+        ${scoreHistory.length < 2
+          ? '<p style="color:var(--muted-text);font-size:0.85rem;text-align:center;padding:2rem 0;">Need at least 2 sessions to show trend.</p>'
+          : '<div class="chart-wrap" style="height:220px"><canvas id="chartScoreLine"></canvas></div>'
+        }
+      </div>
+
+      <!-- Accuracy Doughnut -->
+      <div class="section-card" style="display:flex;flex-direction:column;align-items:center;">
+        <div class="section-title" style="width:100%">
+          🎯 Accuracy Breakdown
+          <span class="section-subtitle">Doughnut</span>
+        </div>
+        <div class="chart-wrap" style="height:200px;width:200px">
+          <canvas id="chartAccDoughnut"></canvas>
+        </div>
+        <div class="ring-wrap" style="margin-top:1rem;gap:1.5rem;">
+          <div class="ring-label">
+            <div class="rl-val" style="color:#10b981">${progress.total_correct || 0}</div>
+            <div class="rl-lbl">Correct</div>
+          </div>
+          <div class="ring-label">
+            <div class="rl-val" style="color:#ef4444">${(progress.total_questions || 0) - (progress.total_correct || 0)}</div>
+            <div class="rl-lbl">Wrong</div>
+          </div>
+          <div class="ring-label">
+            <div class="rl-val" style="color:var(--blind)">${overallAccuracy}%</div>
+            <div class="rl-lbl">Rate</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ROW 2: Radar + Bar ── -->
+    <div class="main-grid animate-fade-up delay-300">
+
+      <!-- Topic Radar Chart -->
+      <div class="section-card">
+        <div class="section-title">
+          🕸️ Topic Mastery Radar
+          <span class="section-subtitle">Explainable AI</span>
+        </div>
+        ${Object.keys(topicAccuracy).length === 0
+          ? '<p style="color:var(--muted-text);font-size:0.85rem;text-align:center;padding:2rem 0;">Complete a quiz to see topic radar.</p>'
+          : '<div class="chart-wrap" style="height:240px"><canvas id="chartTopicRadar"></canvas></div>'
+        }
+      </div>
+
+      <!-- Behavior Bar Chart -->
+      <div class="section-card">
+        <div class="section-title">
+          🧠 Behavior Distribution
+          <span class="section-subtitle">LSTM Tracking</span>
+        </div>
+        ${behaviorHistory.length === 0
+          ? '<p style="color:var(--muted-text);font-size:0.85rem;text-align:center;padding:2rem 0;">No behavior data yet.</p>'
+          : '<div class="chart-wrap" style="height:240px"><canvas id="chartBehBar"></canvas></div>'
+        }
+      </div>
+    </div>
+
+    <!-- ── ROW 3: Score per session bar + Behavior timeline ── -->
+    <div class="main-grid animate-fade-up delay-300">
+
+      <!-- Per-session score bar -->
+      <div class="section-card">
+        <div class="section-title">
+          📊 Score Per Session
+          <span class="section-subtitle">Bar Chart</span>
+        </div>
+        ${scoreHistory.length === 0
+          ? '<p style="color:var(--muted-text);font-size:0.85rem;text-align:center;padding:2rem 0;">No sessions yet.</p>'
+          : '<div class="chart-wrap" style="height:220px"><canvas id="chartScoreBar"></canvas></div>'
+        }
+      </div>
+
+      <!-- Behavior Timeline dots -->
+      <div class="section-card">
+        <div class="section-title">
+          🔵 Behavior Timeline
+          <span class="section-subtitle">Session by session</span>
+        </div>
+        ${behaviorHistory.length === 0
+          ? '<p style="color:var(--muted-text);font-size:0.85rem;">No behavior data yet.</p>'
+          : `<div class="behavior-timeline">
+              ${behaviorHistory.slice(-20).map((b, i) => `
+                <div class="behavior-dot beh-${b}" title="Session ${i+1}: ${b}">
+                  ${b === 'improving' ? '↑' : b === 'struggling' ? '↓' : '→'}
+                </div>`).join('')}
+            </div>
+            <p style="font-size:0.78rem;color:var(--muted-text);margin-top:1rem;">
+              Overall trend: <strong style="color:${behColor(behavior)}">${cap(behavior)}</strong>
+              &nbsp;·&nbsp; ${behaviorHistory.filter(b=>b==='improving').length} improving
+              &nbsp;·&nbsp; ${behaviorHistory.filter(b=>b==='struggling').length} struggling
+              &nbsp;·&nbsp; ${behaviorHistory.filter(b=>b==='stable').length} stable
+            </p>`
+        }
+      </div>
+    </div>
+
+    <!-- ── SECTION LABEL: TOPIC DETAIL ── -->
+    <div class="dash-section-label">🔬 Topic Deep Dive</div>
+
+    <!-- ── ROW 4: Topic bars + AI Rec ── -->
+    <div class="main-grid animate-fade-up delay-400">
+
+      <!-- Topic accuracy bars -->
+      <div class="section-card">
+        <div class="section-title">
+          📋 Topic Accuracy
+          <span class="section-subtitle">XAI Impact Scores</span>
+        </div>
+        ${Object.keys(topicAccuracy).length === 0
+          ? '<p style="color:var(--muted-text);font-size:0.85rem;">Complete a quiz to see topic analysis.</p>'
+          : Object.entries(topicAccuracy).map(([topic, pct]) => {
+              const c = pct >= 80 ? '#10b981' : pct >= 50 ? '#f59e0b' : '#ef4444';
+              const isPW = persistentWeak.includes(topic);
+              return `<div class="topic-row">
+                <div class="topic-row-header">
+                  <span class="topic-row-name">${isPW ? '⚠️ ' : '✅ '}${topicLabelsFull[topic] || topic}</span>
+                  <span class="topic-row-pct" style="color:${c}">${pct}%</span>
+                </div>
+                <div class="topic-bar-bg">
+                  <div class="topic-bar-fill" style="width:${pct}%;background:${c}"></div>
+                </div>
+              </div>`;
+            }).join('')
+        }
+        ${persistentWeak.length > 0 ? `
+          <div style="margin-top:0.8rem;padding:0.6rem 0.8rem;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:10px;font-size:0.8rem;color:#fca5a5;">
+            ⚠️ Persistent weak: <strong>${persistentWeak.map(t => topicLabelsFull[t] || t).join(', ')}</strong>
+          </div>` : ''}
+      </div>
+
+      <!-- AI Recommendations -->
+      <div class="section-card">
+        <div class="section-title">
+          🤖 AI Recommendations
+          <span class="section-subtitle">Generative AI</span>
+        </div>
+        ${latestImprovement
+          ? `<div class="ai-rec-box">${latestImprovement}</div>`
+          : `<div class="ai-rec-box" style="color:var(--muted-text)">Complete an evaluation quiz to get personalized AI recommendations.</div>`
+        }
+        <div style="font-size:0.8rem;color:var(--muted-text);margin-bottom:0.5rem;font-weight:600;">📌 Next Steps</div>
+        ${nextSteps.map(s => `
+          <div class="next-step">
+            <span class="step-icon">${s.icon}</span>
+            <span>${s.text}</span>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- ── SECTION LABEL: SESSIONS ── -->
+    <div class="dash-section-label">📋 Session History</div>
+
+    <!-- ── Recent Sessions full width ── -->
+    <div class="section-card full-width animate-fade-up delay-400" style="margin-bottom:2rem;">
+      <div class="section-title">🗂️ Recent Sessions</div>
+      ${recent_sessions.length === 0
+        ? '<p style="color:var(--muted-text);font-size:0.85rem;">No sessions recorded yet.</p>'
+        : recent_sessions.map(s => {
+            const date = new Date(s.timestamp).toLocaleDateString('en-US', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+            const beh  = s.behavior || 'stable';
+            const sc   = Math.round(s.accuracy || 0);
+            return `<div class="session-item">
+              <div class="session-icon ${s.disability || 'blind'}">${s.disability === 'deaf' ? '🎬' : '🎧'}</div>
+              <div class="session-info">
+                <div class="title">${cap(s.quiz_type || 'evaluation')} — ${cap(s.level || 'slow')} Learner</div>
+                <div class="sub">${date} · ${s.correct_answers || 0}/${s.total_questions || 5} correct · <span style="color:${behColor(beh)}">${beh}</span></div>
+              </div>
+              <div class="session-score" style="color:${scoreColor(sc)}">${sc}%</div>
+            </div>`;
+          }).join('')
+      }
+    </div>
+
+  `;
+
+  // ── DRAW CHARTS ──
+  requestAnimationFrame(() => {
+    const chartDefaults = {
+      color: '#94a3b8',
+      font: { family: "'Inter', sans-serif", size: 11 }
+    };
+    Chart.defaults.color = chartDefaults.color;
+    Chart.defaults.font  = chartDefaults.font;
+
+    const gridColor  = 'rgba(255,255,255,0.06)';
+    const tickColor  = '#64748b';
+
+    // 1. Score Line Chart
+    if (scoreHistory.length >= 2) {
+      destroyChart('scoreLine');
+      const labels = scoreHistory.map((_, i) => `S${i + 1}`);
+      const ctx = document.getElementById('chartScoreLine');
+      if (ctx) {
+        charts['scoreLine'] = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [{
+              label: 'Score %',
+              data: scoreHistory,
+              borderColor: '#00f0ff',
+              backgroundColor: 'rgba(0,240,255,0.08)',
+              borderWidth: 2.5,
+              pointBackgroundColor: scoreHistory.map(s => scoreColor(s)),
+              pointRadius: 5,
+              pointHoverRadius: 7,
+              tension: 0.4,
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y}%` } } },
+            scales: {
+              x: { grid: { color: gridColor }, ticks: { color: tickColor } },
+              y: { min: 0, max: 100, grid: { color: gridColor }, ticks: { color: tickColor, callback: v => v + '%' } }
+            }
+          }
+        });
+      }
+    }
+
+    // 2. Accuracy Doughnut
+    destroyChart('accDoughnut');
+    const correct  = progress.total_correct   || 0;
+    const wrong    = (progress.total_questions || 0) - correct;
+    const ctxD = document.getElementById('chartAccDoughnut');
+    if (ctxD) {
+      charts['accDoughnut'] = new Chart(ctxD, {
+        type: 'doughnut',
+        data: {
+          labels: ['Correct', 'Wrong'],
+          datasets: [{ data: [correct || 1, wrong || 0], backgroundColor: ['#10b981', '#ef4444'], borderWidth: 0, hoverOffset: 6 }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, cutout: '72%',
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed}` } } }
+        }
+      });
+    }
+
+    // 3. Topic Radar
+    if (Object.keys(topicAccuracy).length > 0) {
+      destroyChart('topicRadar');
+      const radarLabels = Object.keys(topicAccuracy).map(t => topicLabels[t] || t);
+      const radarData   = Object.values(topicAccuracy);
+      const ctxR = document.getElementById('chartTopicRadar');
+      if (ctxR) {
+        charts['topicRadar'] = new Chart(ctxR, {
+          type: 'radar',
+          data: {
+            labels: radarLabels,
+            datasets: [{
+              label: 'Mastery %',
+              data: radarData,
+              backgroundColor: 'rgba(0,240,255,0.12)',
+              borderColor: '#00f0ff',
+              borderWidth: 2,
+              pointBackgroundColor: radarData.map(v => scoreColor(v)),
+              pointRadius: 4
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              r: {
+                min: 0, max: 100,
+                grid: { color: gridColor },
+                angleLines: { color: gridColor },
+                ticks: { display: false },
+                pointLabels: { color: '#94a3b8', font: { size: 11 } }
+              }
+            }
+          }
+        });
+      }
+    }
+
+    // 4. Behavior Bar Chart
+    if (behaviorHistory.length > 0) {
+      destroyChart('behBar');
+      const imp  = behaviorHistory.filter(b => b === 'improving').length;
+      const stab = behaviorHistory.filter(b => b === 'stable').length;
+      const str  = behaviorHistory.filter(b => b === 'struggling').length;
+      const ctxB = document.getElementById('chartBehBar');
+      if (ctxB) {
+        charts['behBar'] = new Chart(ctxB, {
+          type: 'bar',
+          data: {
+            labels: ['Improving', 'Stable', 'Struggling'],
+            datasets: [{
+              data: [imp, stab, str],
+              backgroundColor: ['rgba(16,185,129,0.7)', 'rgba(251,191,36,0.7)', 'rgba(239,68,68,0.7)'],
+              borderColor:     ['#10b981', '#fbbf24', '#ef4444'],
+              borderWidth: 1.5,
+              borderRadius: 8
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { display: false }, ticks: { color: tickColor } },
+              y: { grid: { color: gridColor }, ticks: { color: tickColor, stepSize: 1 } }
+            }
+          }
+        });
+      }
+    }
+
+    // 5. Per-session Score Bar
+    if (scoreHistory.length > 0) {
+      destroyChart('scoreBar');
+      const ctxSB = document.getElementById('chartScoreBar');
+      if (ctxSB) {
+        charts['scoreBar'] = new Chart(ctxSB, {
+          type: 'bar',
+          data: {
+            labels: scoreHistory.map((_, i) => `S${i + 1}`),
+            datasets: [{
+              label: 'Score %',
+              data: scoreHistory,
+              backgroundColor: scoreHistory.map(s => s >= 80 ? 'rgba(16,185,129,0.7)' : s >= 50 ? 'rgba(245,158,11,0.7)' : 'rgba(239,68,68,0.7)'),
+              borderColor:     scoreHistory.map(s => s >= 80 ? '#10b981' : s >= 50 ? '#f59e0b' : '#ef4444'),
+              borderWidth: 1.5,
+              borderRadius: 6
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y}%` } } },
+            scales: {
+              x: { grid: { display: false }, ticks: { color: tickColor } },
+              y: { min: 0, max: 100, grid: { color: gridColor }, ticks: { color: tickColor, callback: v => v + '%' } }
+            }
+          }
+        });
+      }
+    }
+  });
+}
+
+window.handleLogout = async () => {
+  await signOut(auth);
+  window.location.href = 'login.html';
+};
+
+window.downloadReport = function () {
+  const origTitle = document.title;
+  document.title = 'SimplexMath Learning Report — ' + (document.querySelector('.profile-info h1')?.textContent || 'Student');
+  window.print();
+  setTimeout(() => { document.title = origTitle; }, 1000);
+};
+</script>
+</body>
+</html>

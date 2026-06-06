@@ -1,0 +1,52 @@
+<svg width="320" height="180" viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg-slow3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#a78bfa;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#60a5fa;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="square-slow3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f59e0b;stop-opacity:1" />
+    </linearGradient>
+    <filter id="soft-shadow">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-opacity="0.2"/>
+    </filter>
+    <filter id="soft-glow">
+      <feGaussianBlur stdDeviation="1" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Soft background -->
+  <rect width="320" height="180" fill="url(#bg-slow3)"/>
+  
+  <!-- Gentle pattern -->
+  <pattern id="gentle-pattern" x="0" y="0" width="35" height="35" patternUnits="userSpaceOnUse">
+    <circle cx="17.5" cy="17.5" r="1" fill="rgba(251,191,36,0.06)"/>
+  </pattern>
+  <rect width="320" height="180" fill="url(#gentle-pattern)"/>
+  
+  <!-- Visual proof squares -->
+  <g transform="translate(160, 85)" filter="url(#soft-shadow)">
+    <!-- Triangle outline -->
+    <polygon points="-45,-20 -45,30 45,30" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"/>
+    
+    <!-- Colored squares on sides -->
+    <rect x="-55" y="-30" width="20" height="20" fill="url(#square-slow3)" rx="3" filter="url(#soft-glow)"/>
+    <rect x="-55" y="10" width="20" height="20" fill="url(#square-slow3)" rx="3" filter="url(#soft-glow)"/>
+    <rect x="35" y="-30" width="20" height="20" fill="url(#square-slow3)" rx="3" filter="url(#soft-glow)"/>
+    
+    <!-- Simple labels -->
+    <text x="-45" y="-15" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="12" font-weight="600">a²</text>
+    <text x="-45" y="25" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="12" font-weight="600">b²</text>
+    <text x="45" y="-15" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="12" font-weight="600">c²</text>
+  </g>
+  
+  <!-- Title section -->
+  <rect x="10" y="140" width="300" height="30" fill="rgba(167,139,250,0.15)" rx="8"/>
+  <text x="160" y="158" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="18" font-weight="600">Lesson 3</text>
+  <text x="160" y="172" text-anchor="middle" fill="#fbbf24" font-family="Arial, sans-serif" font-size="10">Proof Using Squares</text>
+</svg>

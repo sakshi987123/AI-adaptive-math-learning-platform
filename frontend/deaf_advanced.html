@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deaf Advanced Learner — Animated Pythagoras Lesson</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body { margin:0; background:#051528; color:#f8fafc; font-family:Inter,system-ui,sans-serif; }
+    .container { max-width:900px; margin:0 auto; padding:2rem; }
+    .topbar { display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:1.5rem; }
+    .topbar a { color:#7dd3fc; text-decoration:none; font-weight:700; }
+    .topbar p { color:#cbd5e1; margin:0; }
+    .lesson-card { background:rgba(6,12,30,.94); border:1px solid rgba(14,165,233,.18); border-radius:28px; padding:2rem; box-shadow:0 24px 70px rgba(0,0,0,.32); }
+    .header { margin-bottom:1.5rem; }
+    .header h1 { font-size:2.2rem; margin:0; }
+    .header p { color:#cbd5e1; line-height:1.75; }
+    .content { display:grid; grid-template-columns:1fr 0.95fr; gap:2rem; align-items:start; }
+    .slide-card { background:rgba(15,23,42,.96); border:1px solid rgba(59,130,246,.14); border-radius:24px; padding:1.75rem; }
+    .slide-title { color:#38bdf8; font-size:1.6rem; margin-bottom:.85rem; }
+    .slide-copy { color:#cbd5e1; line-height:1.75; min-height:7rem; }
+    .visual { background:rgba(8,30,57,.95); border:1px solid rgba(59,130,246,.18); border-radius:24px; padding:1.5rem; min-height:420px; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:1rem; }
+    .visual .bubble { background:rgba(56,189,248,.12); border:1px solid rgba(56,189,248,.3); border-radius:26px; padding:1rem 1.25rem; max-width:100%; }
+    .visual .bubble strong { color:#7dd3fc; }
+    .controls { display:flex; flex-wrap:wrap; gap:1rem; margin-top:1.5rem; }
+    .btn { border:none; border-radius:999px; padding:1rem 1.4rem; font-weight:700; cursor:pointer; transition:.2s ease; }
+    .btn-primary { background:#0ea5e9; color:#fff; }
+    .btn-secondary { background:rgba(255,255,255,.08); color:#fff; }
+    .btn:hover { transform:translateY(-2px); }
+    .progress-bar { margin-top:1.5rem; height:12px; background:rgba(255,255,255,.08); border-radius:999px; overflow:hidden; }
+    .progress-fill { height:100%; width:0; background:linear-gradient(90deg,#38bdf8,#0ea5e9); transition:width .5s ease; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <a href="Quiz deaf.html">← Back to Deaf Quiz</a>
+      <p>Advanced visual lesson with concise formula animation.</p>
+    </div>
+
+    <div class="lesson-card">
+      <div class="header">
+        <h1>Animated Pythagoras — Deaf Advanced Learner</h1>
+        <p>This page uses fast visual transitions and formula focus for learners who want advanced, efficient understanding.</p>
+      </div>
+
+      <div class="content">
+        <div class="slide-card">
+          <div class="slide-title" id="slide-title">Slide 1</div>
+          <div class="slide-copy" id="slide-text">Loading the advanced lesson...</div>
+          <div class="controls">
+            <button class="btn btn-secondary" id="prev-btn">Previous</button>
+            <button class="btn btn-primary" id="next-btn">Next</button>
+            <button class="btn btn-secondary" id="replay-btn">Replay</button>
+            <button class="btn btn-primary" onclick="location.href='deaf_advanced_test.html'">Take Evaluation Quiz</button>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+        </div>
+
+        <div class="visual" id="visual-panel">
+          <div class="bubble"><strong>c² = a² + b²</strong></div>
+          <div class="bubble"><span id="example-text">Example: 5² + 12² = 13²</span></div>
+          <div class="bubble" id="hint-box">Use the formula directly for any right triangle.</div>
+        </div>
+      </div>
+
+      <div class="explanation-box" id="explanation-box" style="display: none; margin-top: 2rem;">
+        <h4>Why Were You Classified This Way?</h4>
+        <pre id="explanation-text" style="white-space: pre-wrap; font-family: inherit; font-size: 0.9rem;"></pre>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const slides = [
+      {
+        title: 'Key formula for right triangles',
+        text: 'In any right triangle, the long side squared equals the sum of the squares of the other two sides: c² = a² + b².',
+        example: 'Use this formula whenever you know two sides.'
+      },
+      {
+        title: 'Quick numerical example',
+        text: 'If a is 5 and b is 12, then a² is 25 and b² is 144. Add them to get 169.',
+        example: '25 + 144 = 169, so c² = 169.'
+      },
+      {
+        title: 'Find the hypotenuse fast',
+        text: 'Take the square root of 169 to find c. The result is 13.',
+        example: 'c = √169 = 13.'
+      },
+      {
+        title: 'Solve for a missing leg',
+        text: 'If c and one leg are known, subtract the known square from c² and take the square root.',
+        example: 'a = √(c² – b²) when b is known.'
+      },
+      {
+        title: 'Advanced visual rule',
+        text: 'This formula works only for right triangles. Always label the right angle, then apply c² = a² + b².',
+        example: 'Draw the triangle, label the sides, then compute.'
+      }
+    ];
+
+    let index = 0;
+    const titleEl = document.getElementById('slide-title');
+    const textEl = document.getElementById('slide-text');
+    const exampleEl = document.getElementById('example-text');
+    const hintBox = document.getElementById('hint-box');
+    const progressFill = document.getElementById('progress-fill');
+
+    function updateSlide(idx) {
+      const slide = slides[idx];
+      titleEl.textContent = `${slide.title}`;
+      textEl.textContent = slide.text;
+      exampleEl.textContent = slide.example;
+      hintBox.textContent = 'Advanced tip: focus on the formula and the relationship between the sides.';
+      progressFill.style.width = `${((idx + 1) / slides.length) * 100}%`;
+    }
+
+    document.getElementById('next-btn').addEventListener('click', () => {
+      index = Math.min(index + 1, slides.length - 1);
+      updateSlide(index);
+    });
+    document.getElementById('prev-btn').addEventListener('click', () => {
+      index = Math.max(index - 1, 0);
+      updateSlide(index);
+    });
+    document.getElementById('replay-btn').addEventListener('click', () => updateSlide(index));
+
+    // Display explanation if available
+    const explanation = localStorage.getItem('learnerExplanation');
+    if (explanation) {
+      document.getElementById('explanation-text').textContent = explanation;
+      document.getElementById('explanation-box').style.display = 'block';
+    }
+
+    updateSlide(0);
+  </script>
+</body>
+</html>

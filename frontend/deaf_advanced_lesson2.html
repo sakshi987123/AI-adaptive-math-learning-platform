@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 2 – Pythagoras Formula (Direct Concept)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap');
+  :root {
+    --bg:#08101e; --panel:#0d1930; --accent:#a78bfa;
+    --gold:#fbbf24; --green:#34d399; --red:#f87171;
+    --pink:#f472b6; --text:#e2d9f3; --sub:#7c6f9a;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--text);
+    width:1080px;height:608px;overflow:hidden;position:relative}
+  canvas#bg{position:absolute;inset:0;z-index:0}
+  .slide{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;padding:40px;
+    opacity:0;transition:opacity 0.9s ease;pointer-events:none}
+  .slide.active{opacity:1;pointer-events:all}
+
+  /* Utility */
+  .chip{display:inline-block;background:var(--accent);color:#000;
+    font-size:11px;font-weight:900;padding:3px 12px;border-radius:99px;
+    letter-spacing:1.5px;margin-bottom:12px}
+  .enter{opacity:0;transform:translateY(20px);transition:opacity 0.6s,transform 0.6s}
+  .active .enter{opacity:1;transform:none}
+  .d1{transition-delay:.1s!important}.d2{transition-delay:.3s!important}
+  .d3{transition-delay:.5s!important}.d4{transition-delay:.7s!important}
+  .d5{transition-delay:.9s!important}.d6{transition-delay:1.1s!important}
+  .d7{transition-delay:1.3s!important}
+
+  /* SLIDE 0 – TITLE */
+  #s0{background:radial-gradient(ellipse at 30% 50%, #1a0a3d 0%, #08101e 70%)}
+  .title-big{font-size:52px;font-weight:900;text-align:center;line-height:1.1}
+  .title-big span{color:var(--accent)}
+  .title-sub{margin-top:12px;font-size:16px;color:var(--sub)}
+  .formula-preview{
+    margin-top:28px;font-family:'Space Mono',monospace;font-size:42px;
+    font-weight:700;color:var(--gold);
+    text-shadow:0 0 30px rgba(251,191,36,0.6);
+    animation:glowPulse 2s ease-in-out infinite
+  }
+  @keyframes glowPulse{0%,100%{text-shadow:0 0 20px rgba(251,191,36,0.5)}50%{text-shadow:0 0 60px rgba(251,191,36,0.9)}}
+  .asl-row{margin-top:24px;display:flex;gap:16px}
+  .asl-pill{background:rgba(167,139,250,0.1);border:1.5px solid var(--accent);
+    border-radius:12px;padding:10px 18px;display:flex;align-items:center;gap:10px}
+  .asl-pill .em{font-size:28px}
+  .asl-pill .tx{font-size:12px;color:var(--sub)}
+  .asl-pill .tx b{color:var(--accent);display:block;font-size:13px}
+
+  /* SLIDE 1 – THE FORMULA */
+  #s1{flex-direction:row;gap:50px}
+  .fl{flex:1}
+  .fr{flex:1;display:flex;flex-direction:column;align-items:center;gap:18px}
+  .big-formula{
+    font-family:'Space Mono',monospace;font-size:56px;font-weight:700;
+    color:var(--gold);text-align:center;
+    background:rgba(251,191,36,0.07);border:2px solid rgba(251,191,36,0.3);
+    border-radius:20px;padding:20px 30px;
+    box-shadow:0 0 40px rgba(251,191,36,0.15)
+  }
+  .formula-parts{display:flex;gap:10px;width:100%;justify-content:center}
+  .fpart{
+    flex:1;background:var(--panel);border-radius:14px;padding:14px;
+    text-align:center;border:2px solid transparent
+  }
+  .fpart.a{border-color:var(--green)}.fpart.b{border-color:var(--accent)}.fpart.c{border-color:var(--red)}
+  .fpart .sym{font-family:'Space Mono',monospace;font-size:22px;font-weight:700}
+  .fpart.a .sym{color:var(--green)}.fpart.b .sym{color:var(--accent)}.fpart.c .sym{color:var(--red)}
+  .fpart .fname{font-size:12px;color:var(--sub);margin-top:4px}
+
+  /* SLIDE 2 – VISUAL PROOF squares */
+  #s2{}
+  .proof-wrap{display:flex;align-items:center;gap:32px;margin-top:20px}
+  .sq-label{text-align:center}
+  .sq-label .sq-name{font-size:14px;color:var(--sub);margin-bottom:6px}
+  .sq-box{display:flex;align-items:center;justify-content:center;
+    font-family:'Space Mono',monospace;font-weight:700;font-size:20px;
+    border-radius:8px;color:#000;
+    animation:squarePop 0.5s ease both}
+  @keyframes squarePop{from{transform:scale(0) rotate(-10deg)}to{transform:scale(1) rotate(0)}}
+  .plus-sign{font-size:40px;color:var(--accent);font-weight:900}
+  .eq-sign{font-size:40px;color:var(--gold);font-weight:900}
+  .proof-note{margin-top:20px;font-size:15px;color:var(--sub);text-align:center;max-width:600px;line-height:1.6}
+  .proof-note strong{color:var(--text)}
+
+  /* SLIDE 3 – ALGEBRAIC PROOF */
+  #s3{flex-direction:row;gap:40px}
+  .proof-steps{flex:1;display:flex;flex-direction:column;gap:12px}
+  .pstep{background:var(--panel);border-radius:14px;padding:14px 18px;
+    display:flex;align-items:center;gap:14px;
+    border-left:4px solid var(--accent)}
+  .pstep .snum{font-family:'Space Mono',monospace;font-size:18px;color:var(--accent);font-weight:700;min-width:24px}
+  .pstep .stxt{font-size:14px;color:var(--sub);line-height:1.5}
+  .pstep .stxt b{color:var(--text)}
+  .pstep .smath{font-family:'Space Mono',monospace;color:var(--gold);font-size:13px;margin-top:3px;display:block}
+  .proof-visual{flex:1;display:flex;align-items:center;justify-content:center}
+
+  /* SLIDE 4 – EXAMPLE */
+  #s4{flex-direction:row;gap:40px}
+  .ex-left{flex:1}
+  .ex-right{flex:1;display:flex;flex-direction:column;align-items:center;gap:16px}
+  .ex-title{font-size:34px;font-weight:900;margin-bottom:6px}
+  .ex-title span{color:var(--pink)}
+  .given-box{background:var(--panel);border-radius:14px;padding:16px;margin-bottom:14px;border:1.5px solid var(--sub)}
+  .given-box .gl{font-size:13px;color:var(--sub);margin-bottom:8px;letter-spacing:1px}
+  .given-row{display:flex;gap:20px}
+  .gv{background:#0d2040;border-radius:10px;padding:10px 16px;text-align:center}
+  .gv .gnum{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:var(--gold)}
+  .gv .gname{font-size:12px;color:var(--sub)}
+  .steps-box{display:flex;flex-direction:column;gap:10px}
+  .step-line{font-family:'Space Mono',monospace;font-size:14px;padding:10px 16px;
+    background:var(--panel);border-radius:10px;color:var(--text)}
+  .step-line.result{background:rgba(52,211,153,0.12);color:var(--green);border:1.5px solid var(--green);font-size:16px;font-weight:700}
+  .asl-box2{background:rgba(167,139,250,0.08);border:1.5px solid var(--accent);
+    border-radius:12px;padding:12px 20px;display:flex;align-items:center;gap:14px}
+  .asl-box2 .em{font-size:34px}
+  .asl-box2 .tx b{color:var(--accent);display:block;font-size:14px}
+  .asl-box2 .tx{font-size:13px;color:var(--sub)}
+
+  /* SLIDE 5 – RECAP */
+  #s5{}
+  .recap-hd{font-size:40px;font-weight:900;margin-bottom:6px}
+  .recap-hd span{color:var(--green)}
+  .recap-sub{color:var(--sub);font-size:14px;margin-bottom:24px}
+  .recap-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:100%}
+  .rc{background:var(--panel);border-radius:16px;padding:20px 16px;text-align:center;border-top:3px solid var(--accent)}
+  .rc .icon{font-size:32px;margin-bottom:8px}
+  .rc .rtitle{font-size:15px;font-weight:700;color:var(--text)}
+  .rc .rsub{font-size:12px;color:var(--sub);margin-top:4px}
+
+  .progress-bar{position:fixed;bottom:0;left:0;height:4px;background:var(--accent);z-index:99;transition:width 1s linear}
+  .counter{position:fixed;top:16px;right:20px;font-family:'Space Mono',monospace;font-size:13px;color:var(--sub);z-index:99}
+  .counter span{color:var(--accent)}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div class="progress-bar" id="prog"></div>
+<div class="counter">SLIDE <span id="cnum">1</span> / 6</div>
+
+<!-- SLIDE 0: TITLE -->
+<div class="slide active" id="s0">
+  <div class="chip">📘 LESSON 2</div>
+  <div class="title-big">Pythagoras Formula<br><span>(Direct Concept)</span></div>
+  <div class="title-sub">Understanding a² + b² = c² visually and algebraically</div>
+  <div class="formula-preview">a² + b² = c²</div>
+  <div class="asl-row">
+    <div class="asl-pill"><div class="em">🤟</div><div class="tx"><b>ASL: EQUAL</b>Both flat hands → move together = EQUALS</div></div>
+    <div class="asl-pill"><div class="em">✌️</div><div class="tx"><b>ASL: SQUARED</b>Point-2 fingers → circle motion = SQUARED</div></div>
+  </div>
+</div>
+
+<!-- SLIDE 1: THE FORMULA -->
+<div class="slide" id="s1">
+  <div class="fl">
+    <div class="chip enter d1">THE FORMULA</div>
+    <div style="font-size:34px;font-weight:900;margin-bottom:14px" class="enter d2">
+      <span style="color:var(--accent)">Pythagoras</span><br>Theorem
+    </div>
+    <div style="font-size:15px;color:var(--sub);line-height:1.7;margin-bottom:20px" class="enter d3">
+      In any right triangle, the <strong style="color:var(--text)">square of hypotenuse</strong>
+      equals the <strong style="color:var(--text)">sum of squares</strong> of the other two sides.
+    </div>
+    <div class="formula-parts enter d4">
+      <div class="fpart a"><div class="sym">a²</div><div class="fname">Opposite²</div></div>
+      <div style="font-size:28px;font-weight:900;align-self:center;color:var(--gold)">+</div>
+      <div class="fpart b"><div class="sym">b²</div><div class="fname">Adjacent²</div></div>
+      <div style="font-size:28px;font-weight:900;align-self:center;color:var(--gold)">=</div>
+      <div class="fpart c"><div class="sym">c²</div><div class="fname">Hypotenuse²</div></div>
+    </div>
+  </div>
+  <div class="fr">
+    <div class="big-formula enter d2">a²+b²=c²</div>
+    <div class="asl-pill enter d4">
+      <div class="em">🙌</div>
+      <div class="tx"><b>ASL: FORMULA / THEOREM</b>Both F-hands move outward = THEOREM / RULE</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 2: VISUAL PROOF (squares) -->
+<div class="slide" id="s2">
+  <div class="chip enter d1">VISUAL PROOF</div>
+  <div style="font-size:36px;font-weight:900;margin-bottom:4px" class="enter d2">
+    Why Does <span style="color:var(--gold)">a²+b²=c²</span> Work?
+  </div>
+  <div style="font-size:14px;color:var(--sub);margin-bottom:20px" class="enter d3">Area of squares on each side</div>
+  <div class="proof-wrap enter d3">
+    <div class="sq-label">
+      <div class="sq-name" style="color:var(--green)">Side a = 3</div>
+      <div class="sq-box" style="width:90px;height:90px;background:var(--green);animation-delay:.5s">a² = 9</div>
+    </div>
+    <div class="plus-sign">+</div>
+    <div class="sq-label">
+      <div class="sq-name" style="color:var(--accent)">Side b = 4</div>
+      <div class="sq-box" style="width:120px;height:120px;background:var(--accent);animation-delay:.8s">b² = 16</div>
+    </div>
+    <div class="eq-sign">=</div>
+    <div class="sq-label">
+      <div class="sq-name" style="color:var(--gold)">Hypotenuse c = 5</div>
+      <div class="sq-box" style="width:150px;height:150px;background:var(--gold);animation-delay:1.1s;font-size:16px">c² = 25</div>
+    </div>
+  </div>
+  <div class="proof-note enter d5">
+    <strong>9 + 16 = 25</strong> ✅ — The areas of the two smaller squares together <strong>exactly equal</strong> the area of the largest square!
+  </div>
+</div>
+
+<!-- SLIDE 3: ALGEBRAIC REASONING -->
+<div class="slide" id="s3">
+  <div class="proof-steps">
+    <div class="chip enter d1">ALGEBRA STEP-BY-STEP</div>
+    <div style="font-size:32px;font-weight:900;margin-bottom:4px" class="enter d2">
+      Building <span style="color:var(--accent)">Proof</span>
+    </div>
+    <div class="pstep enter d3">
+      <div class="snum">1</div>
+      <div class="stxt"><b>Start with a right triangle</b><span class="smath">sides: a, b, c (hypotenuse)</span></div>
+    </div>
+    <div class="pstep enter d4">
+      <div class="snum">2</div>
+      <div class="stxt"><b>Draw squares on each side</b><span class="smath">square area = side × side = side²</span></div>
+    </div>
+    <div class="pstep enter d5">
+      <div class="snum">3</div>
+      <div class="stxt"><b>Rearrange 4 triangles</b><span class="smath">The remaining area always = c²</span></div>
+    </div>
+    <div class="pstep enter d6">
+      <div class="snum">4</div>
+      <div class="stxt"><b>Conclude</b><span class="smath">a² + b² = c² ✅</span></div>
+    </div>
+  </div>
+  <div class="proof-visual enter d3">
+    <svg width="260" height="260" viewBox="0 0 260 260">
+      <!-- triangle -->
+      <polygon points="60,220 60,80 200,220" fill="rgba(167,139,250,0.15)" stroke="#a78bfa" stroke-width="2.5"/>
+      <!-- square on a (left) -->
+      <rect x="20" y="80" width="40" height="140" fill="rgba(52,211,153,0.15)" stroke="#34d399" stroke-width="1.5" stroke-dasharray="4"/>
+      <text x="22" y="155" fill="#34d399" font-size="12" font-family="Space Mono">a²</text>
+      <!-- square on b (bottom) -->
+      <rect x="60" y="220" width="140" height="40" fill="rgba(167,139,250,0.15)" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="4"/>
+      <text x="118" y="244" fill="#a78bfa" font-size="12" font-family="Space Mono">b²</text>
+      <!-- square on c (hypotenuse, approximate) -->
+      <rect x="60" y="20" width="60" height="60" fill="rgba(251,191,36,0.15)" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="4"/>
+      <text x="72" y="56" fill="#fbbf24" font-size="12" font-family="Space Mono">c²</text>
+      <text x="50" y="156" fill="#a78bfa" font-size="10" font-family="Nunito">90°</text>
+      <rect x="60" y="200" width="20" height="20" fill="none" stroke="#fbbf24" stroke-width="2"/>
+    </svg>
+  </div>
+</div>
+
+<!-- SLIDE 4: EXAMPLE -->
+<div class="slide" id="s4">
+  <div class="ex-left">
+    <div class="chip enter d1">WORKED EXAMPLE</div>
+    <div class="ex-title enter d2">Find the <span>Hypotenuse</span></div>
+    <div class="given-box enter d3">
+      <div class="gl">GIVEN VALUES</div>
+      <div class="given-row">
+        <div class="gv"><div class="gnum">3</div><div class="gname">side a</div></div>
+        <div class="gv"><div class="gnum">4</div><div class="gname">side b</div></div>
+        <div class="gv"><div class="gnum">?</div><div class="gname">side c</div></div>
+      </div>
+    </div>
+    <div class="steps-box">
+      <div class="step-line enter d4">Step 1: a² + b² = c²</div>
+      <div class="step-line enter d5">Step 2: 3² + 4² = c²</div>
+      <div class="step-line enter d6">Step 3: 9 + 16 = c²</div>
+      <div class="step-line enter d7">Step 4: c² = 25</div>
+      <div class="step-line result enter d7">∴ c = √25 = 5 ✅</div>
+    </div>
+  </div>
+  <div class="ex-right">
+    <svg width="220" height="200" viewBox="0 0 220 200" class="enter d3">
+      <polygon points="30,180 30,40 190,180" fill="rgba(251,191,36,0.1)" stroke="#fbbf24" stroke-width="2.5" stroke-linejoin="round"/>
+      <rect x="30" y="160" width="20" height="20" fill="none" stroke="#a78bfa" stroke-width="2"/>
+      <text x="10" y="115" fill="#34d399" font-size="14" font-family="Space Mono" font-weight="700">a=3</text>
+      <text x="98" y="198" fill="#a78bfa" font-size="14" font-family="Space Mono" font-weight="700">b=4</text>
+      <text x="98" y="110" fill="#fbbf24" font-size="14" font-family="Space Mono" font-weight="700">c=5</text>
+      <circle cx="30" cy="180" r="5" fill="#a78bfa"><animate attributeName="r" values="5;9;5" dur="1.5s" repeatCount="indefinite"/></circle>
+    </svg>
+    <div class="asl-box2 enter d4">
+      <div class="em">🖐️</div>
+      <div class="tx"><b>ASL: SQUARE ROOT</b>Bent fingers snap open = SQUARE ROOT</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 5: RECAP -->
+<div class="slide" id="s5">
+  <div class="recap-hd enter d1">Formula <span>Mastered!</span> 🏆</div>
+  <div class="recap-sub enter d2">You now understand Pythagoras' theorem deeply</div>
+  <div class="recap-cards">
+    <div class="rc enter d2"><div class="icon">📐</div><div class="rtitle">a² + b² = c²</div><div class="rsub">The core formula</div></div>
+    <div class="rc enter d3"><div class="icon">🟦</div><div class="rtitle">Visual: Areas</div><div class="rsub">Squares on each side</div></div>
+    <div class="rc enter d4"><div class="icon">🧮</div><div class="rtitle">3-4-5 Example</div><div class="rsub">9 + 16 = 25 ✅</div></div>
+  </div>
+  <div style="margin-top:24px;font-size:15px;color:var(--sub)" class="enter d5">
+    ➡️ Next: <strong style="color:var(--accent)">Lesson 3 — Fast Problem Solving (Hypotenuse)</strong>
+  </div>
+</div>
+
+<script>
+const canvas=document.getElementById('bg'),ctx=canvas.getContext('2d');
+canvas.width=1080;canvas.height=608;
+const stars=Array.from({length:80},()=>({x:Math.random()*1080,y:Math.random()*608,r:Math.random()*1+0.3,a:Math.random()*0.6+0.2}));
+function drawBG(){
+  ctx.clearRect(0,0,1080,608);
+  ctx.fillStyle='#08101e';ctx.fillRect(0,0,1080,608);
+  // purple nebula glow
+  const g=ctx.createRadialGradient(200,300,50,200,300,400);
+  g.addColorStop(0,'rgba(167,139,250,0.08)');g.addColorStop(1,'transparent');
+  ctx.fillStyle=g;ctx.fillRect(0,0,1080,608);
+  stars.forEach(s=>{
+    ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(167,139,250,${s.a})`;ctx.fill();
+  });
+  requestAnimationFrame(drawBG);
+}
+drawBG();
+
+const slides=document.querySelectorAll('.slide');
+const prog=document.getElementById('prog');
+const cnum=document.getElementById('cnum');
+let cur=0;
+const DUR=[4500,6500,7000,6500,7000,5000];
+function goTo(n){slides[cur].classList.remove('active');cur=n;slides[cur].classList.add('active');prog.style.width=((cur+1)/slides.length*100)+'%';cnum.textContent=cur+1;}
+function autoPlay(){setTimeout(()=>{if(cur<slides.length-1){goTo(cur+1);autoPlay();}},DUR[cur]);}
+autoPlay();
+</script>
+</body>
+</html>

@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 1 — Quick Revision: Right Triangle</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap');
+
+  :root {
+    --bg: #0a0f1e;
+    --panel: #0d1528;
+    --accent: #00e5ff;
+    --gold: #ffd94a;
+    --green: #00ff9d;
+    --red: #ff4e6a;
+    --text: #e8f0fe;
+    --muted: #8899bb;
+    --border: rgba(0,229,255,0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ─── TOP BAR ─── */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 24px;
+    background: rgba(13,21,40,0.9);
+    border-bottom: 1px solid var(--border);
+    z-index: 100;
+  }
+  .lesson-badge {
+    background: linear-gradient(135deg, #00e5ff22, #00e5ff44);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: 2px;
+  }
+  .lesson-title-top {
+    font-size: 14px; font-weight: 700; color: var(--text);
+    letter-spacing: 1px;
+  }
+  .controls { display: flex; gap: 10px; align-items: center; }
+  .btn-ctrl {
+    background: rgba(0,229,255,0.1);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 1px;
+  }
+  .btn-ctrl:hover { background: rgba(0,229,255,0.2); }
+
+  /* ─── PROGRESS ─── */
+  .progress-bar {
+    height: 3px;
+    background: rgba(0,229,255,0.1);
+    position: relative;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--green));
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+
+  /* ─── MAIN LAYOUT ─── */
+  .main {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* ─── STAGE (canvas area) ─── */
+  .stage {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: radial-gradient(ellipse at center, #0d1f3a 0%, #0a0f1e 70%);
+  }
+
+  /* Grid background */
+  .stage::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .slide {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    flex-direction: column;
+    padding: 20px;
+  }
+  .slide.active { opacity: 1; pointer-events: all; }
+
+  /* ─── SVG CANVAS ─── */
+  .svg-canvas {
+    width: 520px; height: 380px;
+    position: relative;
+  }
+
+  /* ─── ANNOTATION CALLOUTS ─── */
+  .callout {
+    position: absolute;
+    background: rgba(13,21,40,0.92);
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .callout.gold { border-color: var(--gold); color: var(--gold); }
+  .callout.green { border-color: var(--green); color: var(--green); }
+  .callout.red { border-color: var(--red); color: var(--red); }
+
+  .callout::before {
+    content: '';
+    position: absolute;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    top: 50%; left: -4px;
+    transform: translateY(-50%);
+  }
+
+  /* ─── SLIDE TITLE ─── */
+  .slide-headline {
+    font-size: 13px;
+    font-family: 'Space Mono', monospace;
+    color: var(--accent);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    text-align: center;
+    opacity: 0;
+  }
+  .slide-body-text {
+    font-size: 15px;
+    color: var(--muted);
+    text-align: center;
+    max-width: 500px;
+    line-height: 1.7;
+    margin-top: 12px;
+    opacity: 0;
+  }
+
+  /* ─── FORMULA DISPLAY ─── */
+  .formula-box {
+    background: rgba(0,229,255,0.05);
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+    padding: 16px 32px;
+    font-family: 'Space Mono', monospace;
+    font-size: 28px;
+    color: var(--accent);
+    text-align: center;
+    opacity: 0;
+    margin-top: 12px;
+  }
+
+  /* ─── ANGLE DISPLAY ─── */
+  .angle-badge {
+    position: absolute;
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gold);
+    opacity: 0;
+    background: rgba(255,217,74,0.12);
+    border: 1px solid rgba(255,217,74,0.4);
+    border-radius: 6px;
+    padding: 4px 10px;
+  }
+
+  /* ─── RIGHT PANEL (Sign Language) ─── */
+  .sign-panel {
+    width: 220px;
+    background: var(--panel);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 12px;
+    gap: 12px;
+  }
+
+  .sign-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .interpreter-box {
+    width: 180px; height: 180px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #0d2035, #0a1628);
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Animated avatar placeholder */
+  .avatar {
+    position: relative;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 4px;
+  }
+  .avatar-head {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #c8956c, #a0714f);
+    position: relative;
+    border: 2px solid rgba(0,229,255,0.3);
+  }
+  .avatar-body {
+    width: 60px; height: 55px;
+    border-radius: 12px 12px 0 0;
+    background: linear-gradient(135deg, #1a3a5c, #0d2038);
+    border: 1px solid rgba(0,229,255,0.2);
+    position: relative;
+    display: flex; justify-content: space-between; padding: 8px 4px;
+  }
+  .avatar-arm {
+    width: 14px; height: 35px;
+    border-radius: 7px;
+    background: linear-gradient(135deg, #c8956c, #a0714f);
+    transform-origin: top center;
+  }
+  .arm-l { transform: rotate(-20deg); }
+  .arm-r { transform: rotate(20deg); }
+
+  .interpreter-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, transparent 60%, rgba(10,15,30,0.8) 100%);
+  }
+  .sign-word {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 1px;
+    text-align: center;
+    min-height: 20px;
+  }
+
+  .sign-glossary {
+    width: 100%;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    flex: 1;
+    overflow-y: auto;
+  }
+  .sign-glossary h4 {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+  .sign-term {
+    display: flex; justify-content: space-between;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 11px;
+  }
+  .sign-term span:first-child { color: var(--text); font-weight: 600; }
+  .sign-term span:last-child {
+    color: var(--accent);
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+  }
+
+  /* ─── BOTTOM BAR ─── */
+  .bottombar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 24px;
+    background: rgba(13,21,40,0.9);
+    border-top: 1px solid var(--border);
+  }
+  .slide-counter {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .slide-dots { display: flex; gap: 8px; }
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    border: 1px solid var(--muted);
+    transition: all 0.3s;
+    cursor: pointer;
+  }
+  .dot.active { background: var(--accent); border-color: var(--accent); transform: scale(1.3); }
+  .dot.done { background: var(--green); border-color: var(--green); }
+
+  .caption-bar {
+    background: rgba(0,0,0,0.5);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 20px;
+    font-size: 12px;
+    color: var(--text);
+    max-width: 500px;
+    text-align: center;
+    min-height: 32px;
+    transition: all 0.4s;
+  }
+
+  /* ─── HIGHLIGHT RING ─── */
+  .ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 2px solid;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Angle Arc SVG */
+  .angle-arc { opacity: 0; }
+
+  /* ─── SLIDE 4 - Properties Grid ─── */
+  .props-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 12px; width: 100%; max-width: 420px;
+    opacity: 0;
+  }
+  .prop-card {
+    background: rgba(0,229,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+  }
+  .prop-card .num {
+    font-family: 'Space Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .prop-card .desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  /* Pulse animation */
+  @keyframes pulse-ring {
+    0% { transform: scale(1); opacity: 0.8; }
+    100% { transform: scale(1.5); opacity: 0; }
+  }
+  .pulse { animation: pulse-ring 1.2s ease-out infinite; }
+
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="lesson-badge">LESSON 01 / 06</div>
+  <div class="lesson-title-top">Quick Revision: Right Triangle</div>
+  <div class="controls">
+    <button class="btn-ctrl" id="pauseBtn" onclick="togglePause()">⏸ PAUSE</button>
+    <button class="btn-ctrl" onclick="prevSlide()">◀ PREV</button>
+    <button class="btn-ctrl" onclick="nextSlide()">NEXT ▶</button>
+  </div>
+</div>
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- STAGE -->
+  <div class="stage" id="stage">
+
+    <!-- SLIDE 1: Title / Intro -->
+    <div class="slide" id="s1">
+      <div class="slide-headline">MODULE 1</div>
+      <div style="font-size:42px; font-weight:800; color:var(--text); opacity:0; text-align:center; line-height:1.2;" id="s1-title">
+        Right Triangle<br><span style="color:var(--accent);">Properties</span>
+      </div>
+      <div class="slide-body-text" id="s1-sub">
+        A rapid visual review of triangle anatomy for advanced learners.<br>
+        Every property will be shown and labelled on the diagram.
+      </div>
+    </div>
+
+    <!-- SLIDE 2: The Triangle Shape -->
+    <div class="slide" id="s2">
+      <div class="slide-headline" id="s2-hl">Anatomy of a Right Triangle</div>
+      <div style="position:relative; width:520px; height:340px;">
+        <svg id="tri-svg" width="520" height="300" viewBox="0 0 520 300" style="position:absolute;top:0;left:0;">
+          <defs>
+            <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="var(--accent)"/>
+            </marker>
+          </defs>
+          <!-- Triangle fill -->
+          <polygon id="tri-fill" points="80,240 80,60 360,240"
+            fill="rgba(0,229,255,0.05)" stroke="none"/>
+          <!-- Triangle sides -->
+          <line id="side-a" x1="80" y1="240" x2="80" y2="60"
+            stroke="var(--red)" stroke-width="3" stroke-linecap="round" stroke-dasharray="200" stroke-dashoffset="200"/>
+          <line id="side-b" x1="80" y1="240" x2="360" y2="240"
+            stroke="var(--green)" stroke-width="3" stroke-linecap="round" stroke-dasharray="290" stroke-dashoffset="290"/>
+          <line id="hyp" x1="80" y1="60" x2="360" y2="240"
+            stroke="var(--gold)" stroke-width="4" stroke-linecap="round" stroke-dasharray="380" stroke-dashoffset="380"/>
+          <!-- Right angle box -->
+          <rect id="right-box" x="80" y="220" width="22" height="22"
+            fill="none" stroke="var(--text)" stroke-width="2" opacity="0"/>
+          <!-- Angle arc at hypotenuse vertex (top-left) -->
+          <path id="angle-arc" d="M80,80 A30,30 0 0,1 100,60" fill="none" stroke="var(--gold)" stroke-width="2" opacity="0"/>
+          <!-- Dots at vertices -->
+          <circle id="vA" cx="80" cy="240" r="6" fill="var(--green)" opacity="0"/>
+          <circle id="vB" cx="80" cy="60" r="6" fill="var(--accent)" opacity="0"/>
+          <circle id="vC" cx="360" cy="240" r="6" fill="var(--accent)" opacity="0"/>
+        </svg>
+
+        <!-- Labels -->
+        <div class="callout red" id="lbl-a" style="top:130px;left:30px;">side a (leg)</div>
+        <div class="callout green" id="lbl-b" style="top:256px;left:160px;">side b (leg)</div>
+        <div class="callout gold" id="lbl-c" style="top:110px;left:230px;">c = hypotenuse</div>
+        <div class="angle-badge" id="lbl-90" style="bottom:80px;left:80px;">90°</div>
+        <div class="callout" id="lbl-theta" style="top:60px;left:85px; border-color:var(--gold); color:var(--gold);">θ (theta)</div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3: The 90° Angle Focus -->
+    <div class="slide" id="s3">
+      <div class="slide-headline" id="s3-hl">The Right Angle — 90°</div>
+      <div style="position:relative; width:460px; height:320px;">
+        <svg id="angle-svg" width="460" height="280" viewBox="0 0 460 280">
+          <!-- Large right angle illustration -->
+          <polygon points="60,220 60,60 320,220"
+            fill="rgba(255,217,74,0.06)" stroke="rgba(255,217,74,0.2)" stroke-width="1"/>
+          <!-- Highlight the 90° corner -->
+          <rect id="ra-box" x="60" y="198" width="24" height="24"
+            fill="rgba(255,217,74,0.15)" stroke="var(--gold)" stroke-width="2.5" opacity="0"/>
+          <!-- Sweep arc for 90° visualisation -->
+          <path id="sweep90" d="M60,220 L60,190" stroke="var(--gold)" stroke-width="2" fill="none" opacity="0"/>
+          <!-- Protractor arc (quarter circle) -->
+          <path id="protractor" d="M60,160 A60,60 0 0,1 120,220" fill="rgba(255,217,74,0.08)" stroke="var(--gold)" stroke-width="1.5" stroke-dasharray="100" stroke-dashoffset="100"/>
+          <!-- Sides -->
+          <line x1="60" y1="220" x2="60" y2="60" stroke="var(--red)" stroke-width="3"/>
+          <line x1="60" y1="220" x2="320" y2="220" stroke="var(--green)" stroke-width="3"/>
+          <line x1="60" y1="60" x2="320" y2="220" stroke="var(--gold)" stroke-width="3"/>
+          <!-- 90° label -->
+          <text id="deg90-text" x="90" y="215" font-family="Space Mono" font-size="16" fill="var(--gold)" opacity="0">90°</text>
+        </svg>
+        <div class="slide-body-text" id="s3-text" style="margin-top:0; font-size:14px;">
+          The <strong style="color:var(--gold);">right angle (90°)</strong> is always opposite the longest side.<br>
+          It is the defining feature of a right triangle.
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4: Properties Summary -->
+    <div class="slide" id="s4">
+      <div class="slide-headline" id="s4-hl">Key Properties at a Glance</div>
+      <div class="props-grid" id="props-grid">
+        <div class="prop-card" id="pc1">
+          <div class="num" style="color:var(--gold);">180°</div>
+          <div class="desc">Sum of all interior angles in any triangle</div>
+        </div>
+        <div class="prop-card" id="pc2">
+          <div class="num" style="color:var(--accent);">90°</div>
+          <div class="desc">One angle is always exactly 90° — the right angle</div>
+        </div>
+        <div class="prop-card" id="pc3">
+          <div class="num" style="color:var(--red);">2 legs</div>
+          <div class="desc">Sides <em>a</em> and <em>b</em> form the right angle</div>
+        </div>
+        <div class="prop-card" id="pc4">
+          <div class="num" style="color:var(--green);">hypotenuse</div>
+          <div class="desc">Side <em>c</em> — always the longest; opposite 90°</div>
+        </div>
+      </div>
+      <div class="formula-box" id="s4-formula" style="margin-top:20px; font-size:20px;">
+        α + β = 90° &nbsp;|&nbsp; a² + b² = c²
+      </div>
+    </div>
+
+    <!-- SLIDE 5: The Hypotenuse Highlight -->
+    <div class="slide" id="s5">
+      <div class="slide-headline" id="s5-hl">The Hypotenuse</div>
+      <div style="position:relative; width:500px; height:320px;">
+        <svg width="500" height="270" viewBox="0 0 500 270">
+          <polygon points="80,230 80,50 400,230"
+            fill="rgba(255,217,74,0.04)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+          <!-- Hypotenuse glow -->
+          <line id="hyp-glow" x1="80" y1="50" x2="400" y2="230"
+            stroke="var(--gold)" stroke-width="8" opacity="0" stroke-linecap="round"/>
+          <line x1="80" y1="50" x2="400" y2="230"
+            stroke="var(--gold)" stroke-width="3" stroke-linecap="round"/>
+          <line x1="80" y1="230" x2="80" y2="50"
+            stroke="var(--red)" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
+          <line x1="80" y1="230" x2="400" y2="230"
+            stroke="var(--green)" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
+          <!-- Right box -->
+          <rect x="80" y="208" width="24" height="24" fill="none" stroke="var(--text)" stroke-width="2"/>
+          <!-- Length indicator -->
+          <line id="dim-line" x1="80" y1="20" x2="400" y2="20" stroke="var(--gold)" stroke-width="1" marker-end="url(#arr2)" stroke-dasharray="320" stroke-dashoffset="320"/>
+          <defs>
+            <marker id="arr2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="var(--gold)"/>
+            </marker>
+          </defs>
+          <text id="hyp-label" x="180" y="16" font-family="Space Mono" font-size="13" fill="var(--gold)" opacity="0">c = longest side</text>
+        </svg>
+        <div class="slide-body-text" id="s5-text" style="margin-top:0; font-size:14px;">
+          The <strong style="color:var(--gold);">hypotenuse (c)</strong> is always opposite the 90° angle.<br>
+          It is ALWAYS longer than either leg individually.
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 6: Summary -->
+    <div class="slide" id="s6">
+      <div class="slide-headline" id="s6-hl">Lesson 1 Complete</div>
+      <div style="font-size:32px; font-weight:800; color:var(--green); opacity:0; text-align:center;" id="s6-title">
+        ✓ Right Triangle Mastered
+      </div>
+      <div class="formula-box" id="s6-formula">
+        90° · 2 legs · 1 hypotenuse · a² + b² = c²
+      </div>
+      <div class="slide-body-text" id="s6-text">
+        You've reviewed the anatomy. Next up: visual proof of Pythagoras' theorem.
+      </div>
+    </div>
+
+  </div><!-- /stage -->
+
+  <!-- SIGN LANGUAGE PANEL -->
+  <div class="sign-panel">
+    <div class="sign-label">Sign Language</div>
+    <div class="interpreter-box">
+      <div class="avatar" id="avatar">
+        <div class="avatar-head"></div>
+        <div class="avatar-body">
+          <div class="avatar-arm arm-l" id="arm-l"></div>
+          <div class="avatar-arm arm-r" id="arm-r"></div>
+        </div>
+      </div>
+      <div class="interpreter-overlay"></div>
+    </div>
+    <div class="sign-word" id="sign-word">▶ RIGHT TRIANGLE</div>
+
+    <div class="sign-glossary">
+      <h4>Sign Glossary</h4>
+      <div class="sign-term"><span>Right Angle</span><span>L-hand shape</span></div>
+      <div class="sign-term"><span>Hypotenuse</span><span>Diagonal slide</span></div>
+      <div class="sign-term"><span>90 Degrees</span><span>9→0 fingers</span></div>
+      <div class="sign-term"><span>Triangle</span><span>Index trace</span></div>
+      <div class="sign-term"><span>Leg (side)</span><span>Palm flat</span></div>
+      <div class="sign-term"><span>Angle</span><span>Bent index</span></div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- BOTTOM BAR -->
+<div class="bottombar">
+  <div class="slide-counter">SLIDE <span id="slideNum">1</span> / 6</div>
+  <div class="caption-bar" id="caption">Welcome to the Right Triangle module.</div>
+  <div class="slide-dots">
+    <div class="dot active" onclick="goSlide(0)"></div>
+    <div class="dot" onclick="goSlide(1)"></div>
+    <div class="dot" onclick="goSlide(2)"></div>
+    <div class="dot" onclick="goSlide(3)"></div>
+    <div class="dot" onclick="goSlide(4)"></div>
+    <div class="dot" onclick="goSlide(5)"></div>
+  </div>
+</div>
+
+<script>
+  const CAPTIONS = [
+    "Welcome to Lesson 1: Right Triangle Quick Revision.",
+    "A right triangle has 3 sides: two legs (a and b) and the hypotenuse (c).",
+    "The 90° right angle defines this triangle type — it is always at one vertex.",
+    "Key properties: angles sum to 180°, one angle is 90°, c is always the longest side.",
+    "The hypotenuse is opposite the 90° angle and is always the longest side.",
+    "Lesson 1 complete! You know the anatomy of a right triangle."
+  ];
+
+  const SIGN_WORDS = [
+    "RIGHT TRIANGLE", "SIDES & LEGS", "RIGHT ANGLE · 90°",
+    "PROPERTIES", "HYPOTENUSE", "COMPLETE ✓"
+  ];
+
+  let currentSlide = 0;
+  let paused = false;
+  let timer = null;
+  const DURATIONS = [3000, 6000, 5500, 6000, 5500, 5000];
+
+  function updateProgress() {
+    const pct = ((currentSlide + 1) / 6) * 100;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('slideNum').innerText = currentSlide + 1;
+    document.getElementById('caption').innerText = CAPTIONS[currentSlide];
+    document.getElementById('sign-word').innerText = '▶ ' + SIGN_WORDS[currentSlide];
+    const dots = document.querySelectorAll('.dot');
+    dots.forEach((d, i) => {
+      d.className = 'dot';
+      if (i < currentSlide) d.classList.add('done');
+      if (i === currentSlide) d.classList.add('active');
+    });
+  }
+
+  function showSlide(idx) {
+    // hide all
+    document.querySelectorAll('.slide').forEach(s => {
+      gsap.to(s, { opacity: 0, duration: 0.4 });
+      s.classList.remove('active');
+    });
+    setTimeout(() => {
+      const slide = document.getElementById('s' + (idx + 1));
+      slide.classList.add('active');
+      gsap.to(slide, { opacity: 1, duration: 0.5 });
+      animateSlide(idx);
+      updateProgress();
+      animateAvatar(idx);
+    }, 450);
+  }
+
+  function animateSlide(idx) {
+    const tl = gsap.timeline();
+    if (idx === 0) {
+      tl.from('#s1 .slide-headline', { opacity: 0, y: -20, duration: 0.6 })
+        .to('#s1 .slide-headline', { opacity: 1 }, 0)
+        .to('#s1-title', { opacity: 1, y: 0, duration: 0.7 }, 0.3)
+        .from('#s1-title', { y: 30 }, 0.3)
+        .to('#s1-sub', { opacity: 1, duration: 0.6 }, 1);
+    }
+    if (idx === 1) {
+      tl.to('#s2-hl', { opacity: 1, duration: 0.5 })
+        .to('#tri-fill', { opacity: 1, duration: 0.6 }, 0.2)
+        .to('#side-a', { strokeDashoffset: 0, duration: 0.8 }, 0.5)
+        .to('#vA', { opacity: 1, duration: 0.3 }, 0.8)
+        .to('#side-b', { strokeDashoffset: 0, duration: 0.8 }, 1.0)
+        .to('#vC', { opacity: 1, duration: 0.3 }, 1.5)
+        .to('#hyp', { strokeDashoffset: 0, duration: 0.9 }, 1.5)
+        .to('#vB', { opacity: 1, duration: 0.3 }, 2.2)
+        .to('#right-box', { opacity: 1, duration: 0.4 }, 2.4)
+        .to('#lbl-90', { opacity: 1, duration: 0.4 }, 2.5)
+        .to('#lbl-a', { opacity: 1, duration: 0.4 }, 2.8)
+        .to('#lbl-b', { opacity: 1, duration: 0.4 }, 3.1)
+        .to('#lbl-c', { opacity: 1, duration: 0.4 }, 3.4)
+        .to('#lbl-theta', { opacity: 1, duration: 0.4 }, 3.7);
+    }
+    if (idx === 2) {
+      tl.to('#s3-hl', { opacity: 1, duration: 0.5 })
+        .to('#ra-box', { opacity: 1, duration: 0.5 }, 0.5)
+        .to('#protractor', { strokeDashoffset: 0, duration: 1 }, 0.8)
+        .to('#deg90-text', { opacity: 1, duration: 0.5 }, 1.6)
+        .to('#s3-text', { opacity: 1, duration: 0.5 }, 2.2);
+    }
+    if (idx === 3) {
+      tl.to('#s4-hl', { opacity: 1, duration: 0.5 })
+        .to('#props-grid', { opacity: 1, duration: 0.5 }, 0.3)
+        .from('#pc1', { x: -30, opacity: 0, duration: 0.5 }, 0.5)
+        .to('#pc1', { opacity: 1 }, 0.5)
+        .from('#pc2', { x: 30, opacity: 0, duration: 0.5 }, 0.8)
+        .to('#pc2', { opacity: 1 }, 0.8)
+        .from('#pc3', { x: -30, opacity: 0, duration: 0.5 }, 1.1)
+        .to('#pc3', { opacity: 1 }, 1.1)
+        .from('#pc4', { x: 30, opacity: 0, duration: 0.5 }, 1.4)
+        .to('#pc4', { opacity: 1 }, 1.4)
+        .to('#s4-formula', { opacity: 1, duration: 0.6 }, 2.2);
+    }
+    if (idx === 4) {
+      tl.to('#s5-hl', { opacity: 1, duration: 0.5 })
+        .to('#hyp-glow', { opacity: 0.35, duration: 0.6 }, 0.5)
+        .to('#hyp-glow', { opacity: 0.7, duration: 0.5, repeat: 2, yoyo: true }, 0.8)
+        .to('#dim-line', { strokeDashoffset: 0, duration: 1 }, 1.2)
+        .to('#hyp-label', { opacity: 1, duration: 0.5 }, 2)
+        .to('#s5-text', { opacity: 1, duration: 0.5 }, 2.5);
+    }
+    if (idx === 5) {
+      tl.to('#s6-hl', { opacity: 1, duration: 0.5 })
+        .to('#s6-title', { opacity: 1, scale: 1, duration: 0.7 }, 0.3)
+        .from('#s6-title', { scale: 0.8 }, 0.3)
+        .to('#s6-formula', { opacity: 1, duration: 0.6 }, 1.2)
+        .to('#s6-text', { opacity: 1, duration: 0.5 }, 1.8);
+    }
+  }
+
+  function animateAvatar(idx) {
+    const armL = document.getElementById('arm-l');
+    const armR = document.getElementById('arm-r');
+    const signs = [
+      [[-10,10],[10,-10]], [[-30,0],[0,30]], [[-5,-45],[5,-45]],
+      [[-20,20],[-20,20]], [[0,0],[0,0]], [[-15,-15],[15,15]]
+    ];
+    const [l, r] = signs[idx];
+    gsap.to(armL, { rotation: l[0], duration: 0.5, ease: 'power2.out' });
+    gsap.to(armR, { rotation: r[0], duration: 0.5, ease: 'power2.out', delay: 0.1 });
+    setTimeout(() => {
+      gsap.to(armL, { rotation: l[1], duration: 0.5, ease: 'power2.inOut' });
+      gsap.to(armR, { rotation: r[1], duration: 0.5, ease: 'power2.inOut', delay: 0.1 });
+    }, 1200);
+  }
+
+  function scheduleNext() {
+    clearTimeout(timer);
+    if (!paused && currentSlide < 5) {
+      timer = setTimeout(() => {
+        currentSlide++;
+        showSlide(currentSlide);
+        scheduleNext();
+      }, DURATIONS[currentSlide]);
+    }
+  }
+
+  function nextSlide() {
+    if (currentSlide < 5) { currentSlide++; showSlide(currentSlide); scheduleNext(); }
+  }
+  function prevSlide() {
+    if (currentSlide > 0) { currentSlide--; showSlide(currentSlide); scheduleNext(); }
+  }
+  function goSlide(i) { currentSlide = i; showSlide(i); scheduleNext(); }
+
+  function togglePause() {
+    paused = !paused;
+    document.getElementById('pauseBtn').innerText = paused ? '▶ PLAY' : '⏸ PAUSE';
+    if (!paused) scheduleNext();
+    else clearTimeout(timer);
+  }
+
+  // Init
+  showSlide(0);
+  scheduleNext();
+</script>
+</body>
+</html>

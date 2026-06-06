@@ -1,0 +1,61 @@
+<svg width="320" height="180" viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg5-3d" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0891b2;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#06b6d4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="world-3d" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#34d399;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow-3d">
+      <feDropShadow dx="0" dy="15" stdDeviation="18" flood-opacity="0.8"/>
+    </filter>
+    <filter id="glow-3d">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background with depth -->
+  <rect width="320" height="180" fill="url(#bg5-3d)"/>
+  
+  <!-- 3D Globe/World -->
+  <g transform="translate(160, 85)" filter="url(#shadow-3d)">
+    <!-- Globe sphere -->
+    <circle cx="0" cy="0" r="45" fill="url(#world-3d)" opacity="0.3"/>
+    <circle cx="0" cy="0" r="45" fill="none" stroke="rgba(16,185,129,0.4)" stroke-width="1"/>
+    
+    <!-- Globe lines -->
+    <ellipse cx="0" cy="0" rx="45" ry="15" fill="none" stroke="rgba(16,185,129,0.6)" stroke-width="1" opacity="0.8"/>
+    <ellipse cx="0" cy="0" rx="15" ry="45" fill="none" stroke="rgba(16,185,129,0.6)" stroke-width="1" opacity="0.8"/>
+    
+    <!-- Location markers -->
+    <circle cx="-20" cy="-15" r="4" fill="#fbbf24" filter="url(#glow-3d)"/>
+    <circle cx="25" cy="10" r="4" fill="#fbbf24" filter="url(#glow-3d)"/>
+    <circle cx="15" cy="-25" r="3" fill="#fbbf24" filter="url(#glow-3d)"/>
+    <circle cx="-10" cy="20" r="3.5" fill="#fbbf24" filter="url(#glow-3d)"/>
+    
+    <!-- Connection lines -->
+    <path d="M -20,-15 Q 0,-5 25,10" stroke="#fbbf24" stroke-width="2" fill="none" opacity="0.7"/>
+    <path d="M 15,-25 Q 10,-15 -10,20" stroke="#fbbf24" stroke-width="1.5" fill="none" opacity="0.6"/>
+  </g>
+  
+  <!-- Floating icons -->
+  <g opacity="0.7">
+    <text x="50" y="40" fill="#34d399" font-family="Arial, sans-serif" font-size="16" font-weight="bold" filter="url(#glow-3d)">🏗️</text>
+    <text x="270" y="65" fill="#34d399" font-family="Arial, sans-serif" font-size="16" font-weight="bold" filter="url(#glow-3d)">🧭</text>
+    <text x="80" y="130" fill="#34d399" font-family="Arial, sans-serif" font-size="16" font-weight="bold" filter="url(#glow-3d)">📐</text>
+    <text x="240" y="110" fill="#34d399" font-family="Arial, sans-serif" font-size="16" font-weight="bold" filter="url(#glow-3d)">🌍</text>
+  </g>
+  
+  <!-- Title section with 3D effect -->
+  <rect x="10" y="140" width="300" height="35" fill="rgba(6,95,70,0.95)" rx="8" filter="url(#shadow-3d)"/>
+  <rect x="15" y="145" width="290" height="25" fill="rgba(5,150,105,0.9)" rx="6"/>
+  <text x="160" y="160" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="22" font-weight="bold" filter="url(#glow-3d)">Lesson 5</text>
+  <text x="160" y="176" text-anchor="middle" fill="#34d399" font-family="Arial, sans-serif" font-size="12" font-weight="600">Real World Applications</text>
+</svg>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SimplexMath — My Profile</title>
+<link rel="stylesheet" href="styles.css"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  body { overflow-x: hidden; }
+  .profile-page { max-width: 1200px; margin: 0 auto; padding: 5rem 2rem 4rem; }
+
+  /* ── DOWNLOAD BTN ── */
+  .btn-download {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.6rem 1.3rem; border-radius: 100px; border: none; cursor: pointer;
+    background: linear-gradient(135deg, var(--blind), var(--deaf));
+    color: #fff; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 0.88rem;
+    box-shadow: 0 4px 16px rgba(0,240,255,0.2); transition: all 0.2s; margin-left: auto;
+  }
+  .btn-download:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,240,255,0.3); }
+
+  /* ── PRINT ── */
+  @media print {
+    body { background:#fff !important; color:#000 !important; }
+    nav,.btn-download,.orb { display:none !important; }
+    .profile-page { padding:1rem !important; max-width:100% !important; }
+    .profile-header,.stat-card,.section-card { background:#f8f9fa !important; border:1px solid #dee2e6 !important; box-shadow:none !important; color:#000 !important; }
+    .loading-state { display:none !important; }
+  }
+
+  /* ── HEADER ── */
+  .profile-header {
+    display: flex; align-items: center; gap: 1.5rem;
+    background: var(--surface); border: 1px solid var(--card-border);
+    border-radius: 24px; padding: 1.8rem 2rem; margin-bottom: 2rem;
+    backdrop-filter: blur(16px);
+  }
+  .profile-avatar-lg {
+    width: 80px; height: 80px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--blind), var(--deaf));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; font-weight: 800; color: #000; overflow: hidden;
+    box-shadow: 0 0 0 4px rgba(0,240,255,0.2);
+  }
+  .profile-avatar-lg img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+  .profile-info h1 { font-family:'Outfit',sans-serif; font-size:1.7rem; font-weight:800; margin-bottom:0.2rem; }
+  .profile-info p { color:var(--muted-text); font-size:0.9rem; }
+  .profile-badges { display:flex; gap:0.6rem; margin-top:0.6rem; flex-wrap:wrap; }
+  .badge-pill { padding:0.25rem 0.8rem; border-radius:100px; font-size:0.75rem; font-weight:600; }
+  .badge-level { background:rgba(0,240,255,0.1); border:1px solid rgba(0,240,255,0.3); color:var(--blind); }
+  .badge-behavior-improving { background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); color:#10b981; }
+  .badge-behavior-struggling { background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); color:#ef4444; }
+  .badge-behavior-stable { background:rgba(251,191,36,0.1); border:1px solid rgba(251,191,36,0.3); color:var(--gold); }
+  .badge-disability { background:rgba(168,85,247,0.1); border:1px solid rgba(168,85,247,0.3); color:var(--deaf); }
+
+  /* ── STATS ROW ── */
+  .stats-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:1rem; margin-bottom:2rem; }
+  .stat-card {
+    background:var(--surface); border:1px solid var(--card-border);
+    border-radius:20px; padding:1.2rem 1rem; text-align:center;
+    backdrop-filter:blur(16px); transition: transform 0.2s, box-shadow 0.2s;
+    position: relative; overflow: hidden;
+  }
+  .stat-card:hover { transform:translateY(-3px); box-shadow:0 12px 32px rgba(0,0,0,0.3); }
+  .stat-card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:3px;
+    background: var(--accent-color, linear-gradient(90deg, var(--blind), var(--deaf)));
+    border-radius:20px 20px 0 0;
+  }
+  .stat-card .val { font-family:'Outfit',sans-serif; font-size:2rem; font-weight:800; }
+  .stat-card .lbl { font-size:0.78rem; color:var(--muted-text); margin-top:0.2rem; }
+  .stat-card .trend { font-size:0.72rem; margin-top:0.4rem; }
+
+  /* ── SECTION CARDS ── */
+  .main-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:2rem; }
+  .full-width { grid-column:1 / -1; }
+  .col-3 { grid-template-columns:1fr 1fr 1fr; }
+
+  .section-card {
+    background:var(--surface); border:1px solid var(--card-border);
+    border-radius:20px; padding:1.5rem; backdrop-filter:blur(16px);
+  }
+  .section-title {
+    font-family:'Outfit',sans-serif; font-size:1rem; font-weight:700;
+    margin-bottom:1.2rem; display:flex; align-items:center; gap:0.5rem;
+  }
+  .section-subtitle { font-size:0.72rem; color:var(--muted-text); font-weight:400; margin-left:auto; }
+
+  /* ── CHART CONTAINERS ── */
+  .chart-wrap { position:relative; width:100%; }
+  .chart-wrap canvas { max-width:100%; }
+
+  /* ── TOPIC BARS ── */
+  .topic-row { margin-bottom:0.9rem; }
+  .topic-row-header { display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:0.35rem; }
+  .topic-row-name { color:#e2e8f0; }
+  .topic-row-pct { font-weight:700; }
+  .topic-bar-bg { height:9px; background:rgba(255,255,255,0.06); border-radius:100px; overflow:hidden; }
+  .topic-bar-fill { height:100%; border-radius:100px; transition:width 1.2s cubic-bezier(.4,0,.2,1); }
+
+  /* ── BEHAVIOR TIMELINE ── */
+  .behavior-timeline { display:flex; gap:0.4rem; flex-wrap:wrap; }
+  .behavior-dot {
+    width:34px; height:34px; border-radius:9px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:0.8rem; font-weight:700; cursor:default;
+    transition: transform 0.15s;
+  }
+  .behavior-dot:hover { transform:scale(1.15); }
+  .beh-improving { background:rgba(16,185,129,0.2); color:#10b981; border:1px solid rgba(16,185,129,0.3); }
+  .beh-struggling { background:rgba(239,68,68,0.2); color:#ef4444; border:1px solid rgba(239,68,68,0.3); }
+  .beh-stable { background:rgba(251,191,36,0.2); color:var(--gold); border:1px solid rgba(251,191,36,0.3); }
+
+  /* ── SESSION HISTORY ── */
+  .session-item {
+    display:flex; align-items:center; gap:1rem;
+    padding:0.85rem 0; border-bottom:1px solid rgba(255,255,255,0.05);
+    transition: background 0.15s; border-radius:8px; padding-left:0.4rem;
+  }
+  .session-item:last-child { border-bottom:none; }
+  .session-item:hover { background:rgba(255,255,255,0.03); }
+  .session-icon { width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
+  .session-icon.blind { background:rgba(0,240,255,0.1); border:1px solid rgba(0,240,255,0.2); }
+  .session-icon.deaf  { background:rgba(168,85,247,0.1); border:1px solid rgba(168,85,247,0.2); }
+  .session-info { flex:1; min-width:0; }
+  .session-info .title { font-size:0.88rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .session-info .sub { font-size:0.75rem; color:var(--muted-text); }
+  .session-score { font-family:'Outfit',sans-serif; font-size:1.15rem; font-weight:800; }
+
+  /* ── AI REC BOX ── */
+  .ai-rec-box {
+    background:rgba(168,85,247,0.06); border:1px solid rgba(168,85,247,0.2);
+    border-radius:14px; padding:1rem 1.2rem; font-size:0.88rem;
+    line-height:1.7; color:#e2e8f0; margin-bottom:1rem;
+  }
+  .next-step { display:flex; align-items:flex-start; gap:0.6rem; padding:0.5rem 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.84rem; color:#cbd5e1; }
+  .next-step:last-child { border-bottom:none; }
+  .step-icon { font-size:1rem; flex-shrink:0; }
+
+  /* ── SCORE RING ── */
+  .ring-wrap { display:flex; align-items:center; justify-content:center; gap:2rem; flex-wrap:wrap; }
+  .ring-label { text-align:center; }
+  .ring-label .rl-val { font-family:'Outfit',sans-serif; font-size:1.6rem; font-weight:800; }
+  .ring-label .rl-lbl { font-size:0.75rem; color:var(--muted-text); }
+
+  /* ── HEATMAP ── */
+  .heatmap-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+  .hm-cell {
+    aspect-ratio:1; border-radius:4px; background:rgba(255,255,255,0.04);
+    transition:transform 0.15s;
+  }
+  .hm-cell:hover { transform:scale(1.3); }
+  .hm-0 { background:rgba(255,255,255,0.04); }
+  .hm-1 { background:rgba(0,240,255,0.2); }
+  .hm-2 { background:rgba(0,240,255,0.45); }
+  .hm-3 { background:rgba(0,240,255,0.75); }
+  .hm-4 { background:rgba(0,240,255,1); }
+
+  /* ── LOADING ── */
+  .loading-state { text-align:center; padding:3rem; color:var(--muted-text); }
+  .loading-spinner { width:40px; height:40px; border:3px solid rgba(255,255,255,0.1); border-top-color:var(--blind); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 1rem; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  /* ── DIVIDER LABEL ── */
+  .dash-section-label {
+    font-family:'Outfit',sans-serif; font-size:0.72rem; font-weight:700;
+    letter-spacing:0.12em; text-transform:uppercase; color:var(--muted-text);
+    margin:2rem 0 1rem; display:flex; align-items:center; gap:0.8rem;
+  }
+  .dash-section-label::after { content:''; flex:1; height:1px; background:rgba(255,255,255,0.07); }
+
+  @media(max-width:900px) {
+    .stats-grid { grid-template-columns:repeat(3,1fr); }
+    .main-grid { grid-template-columns:1fr; }
+    .col-3 { grid-template-columns:1fr; }
+  }
+  @media(max-width:560px) {
+    .stats-grid { grid-template-columns:repeat(2,1fr); }
+  }
+</style>
+</head>
+<body style="visibility:hidden;">
+<div class="orb orb-cyan"></div>
+<div class="orb orb-purple"></div>
+
+<nav>
+  <a href="index.html" class="nav-logo">SimplexMath</a>
+  <div style="display:flex;align-items:center;gap:1rem;">
+    <a href="index.html" class="btn btn-outline" style="padding:0.5rem 1.2rem;font-size:0.9rem;">← Home</a>
+  </div>
+</nav>
+
+<div class="layout-wrapper profile-page" id="profile-page">
+  <div class="loading-state" id="loading-state">
+    <div class="loading-spinner"></div>
+    <p>Loading your profile...</p>
+  </div>
+</div>
+
